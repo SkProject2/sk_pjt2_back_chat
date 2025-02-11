@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <div>
+        <h3>간단 메세지 체크</h3>
+        <label 방 번호 선택></label>
+        <input id="roomId" type="number" min="1" placeholder="방번호"></br>
+        <input id="sender" type="text" placeholder="이름 설정"></br>
+        <input id="btn1" type="submit" onclick="sub()" value="연결">
+        <input id="btn2" type="submit" onclick="unsub()" value="연결해제">
+
+    </div>
+    <div>
+        <h3>보낼 메세지</h3>
+        <input id="content" type="text" placeholder="보낼 메세지">
+        <input type="submit" onclick="send()">
+    </div>
+    <div id="monitor">
+
+    </div>
+    
+
+
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+<script>
+
+    function sub(){
+        const roomId = document.getElementById('roomId').value;
+        const sender = document.getElementById('sender').value;
+        const monitor = document.getElementById('monitor');
+
+        //var socket = new SockJS('/ws-stomp');
+        // 이렇게 하면 SpringBoot 재가동 없이 테스트 가능
+        stompClient = Stomp.client(`ws://localhost:8070/ws-stomp`);
+        var header = {
+            'sender': `${sender}`
+        };
+        console.log(header.sender);
+        stompClient.connect(header, function(frame){console.log('Connected : '+frame)})
+        monitor.innerHTML += `connected '${header.sender}'</br>`;
+
+        
+        // 크롬환경에서 local테스트 중이면 allow-cors 확장자를 받아서 할 것
+        
+        // 방 번호를 바꿨다면 기존 subscribe는 끊어야 안받음
+        // 1. 방이 있는지 검사
+        axios.get(`http://localhost:8070/room/${roomId}`)
+        .then(function(response){
+            // 2. 방이 있으면 접속
+            const room = response.data;
+            console.log(room.id)
+            console.log(roomId)
+
+            if(response.data.id==roomId){
+                stompClient.subscribe(`/sub/chat/room/${roomId}`, chatting , {id:`cus-${roomId}`})
+
+                // 해당 채팅방 내역 다 불러오기
+                axios.get(`http://localhost:8070/chat/room/${roomId}`)
+                .then(function(response){
+                    response.data.map(function(data){
+                        monitor.innerHTML += `${data.sender}: ${data.content}</br>`;
+                    });
+                })
+                .catch(function(error){})
+
+            }
+            else{
+                console.log(`해당 방 없음, 방을 만들고 오세요`)
+            }
+            
+        })
+        .catch(function(error){
+            // 4. 접속오류
+            console.log(`접속오류`)
+        })
+    }
+
+    chatting = function(response){
+        // 메세지를 받으면 처리할 행동 정의
+        const monitor = document.getElementById('monitor');
+        
+        if(response.body){
+            const res = JSON.parse(response.body);
+            const head = response.header;
+            console.log(head);
+            monitor.innerHTML += `${res.sender}: ${res.content} </br>`;
+        }
+    }
+
+    function unsub(){
+        var roomId = document.getElementById('roomId').value;
+        const monitor = document.getElementById('monitor');
+        stompClient.unsubscribe(`cus-${roomId}`);
+        stompClient.disconnect(function(){
+            monitor.innerHTML += `disconnect </br>`;
+        });
+    }
+
+    function send(){
+        //JSON
+        var roomId = document.getElementById('roomId').value;
+        var sender = document.getElementById('sender').value;
+        var content = document.getElementById('content').value;
+        message = {
+            'roomId':roomId,
+            'sender':sender,
+            'content':content
+        }
+        stompClient.send(`/pub/room/${roomId}/message`, {}, JSON.stringify(message));
+    }
+</script>
+</html>
