@@ -7,6 +7,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -14,8 +17,11 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -32,22 +38,29 @@ public class ChatService {
     private ChatRepository chatRepository;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
     private final SimpMessageSendingOperations messagingTemplate;
     private final KafkaTemplate<String, String> kafkaTemplate;
+    private final Date date = new Date();
 
     // Kafka Producer
     public void sendMessageWithKafka(Long roomId, ChatDto chatDto) throws JsonProcessingException {
         System.out.println("채팅 서비스 메시지 전송 시작");
         Chat chat = Chat.builder()
+                .id(UUID.randomUUID().toString())
                 .roomId(roomId)
                 .sender(chatDto.getSender())
                 .message(chatDto.getContent())
+                .timestamp(date.getTime())
                 .build();
 
         System.out.println("메세지 채널 전송 시도: " + roomId);
         kafkaTemplate.send("chat", objectMapper.writeValueAsString(chatDto));
 
         chatRepository.save(chat);
+
         System.out.println("Produce Message: " + chatDto.toString());
     }
 
@@ -77,7 +90,8 @@ public class ChatService {
     }
 
     public List<ChatDto> getAllMessageById(Long roomId) {
-        List<Chat> lc = chatRepository.findAllByRoomId(roomId);
+//        List<Chat> lc = chatRepository.findAllByRoomId(roomId);
+        List<Chat> lc = mongoTemplate.find(new Query(new Criteria("roomId").is(roomId)),Chat.class);
         return lc.stream().map(
                 Chat::toDto
         ).toList();

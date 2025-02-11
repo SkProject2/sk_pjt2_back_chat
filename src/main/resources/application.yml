@@ -19,9 +19,11 @@ spring:
     redis:
       host: localhost
       port: 6379
+      repositories:
+        enabled: false
     mongodb:
-      client: mongodb://localhost:27017
-      name: test
+      uri: mongodb://localhost/sk_pjt2_chat
+      port: 27017
 
   datasource:
     url: jdbc:mysql://localhost:3306/sk_pjt2_chat

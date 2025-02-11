@@ -21,4 +21,5 @@ public class ChatDto implements Serializable {
     private Long roomId;
     private String sender;
     private String content;
+    private Long timestamp;
 }

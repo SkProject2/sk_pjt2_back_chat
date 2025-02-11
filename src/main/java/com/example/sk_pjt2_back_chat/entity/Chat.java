@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * 채팅 내용을 관리하는 Entity
@@ -14,23 +15,24 @@ import lombok.NoArgsConstructor;
  * 통신용 DTO를 별도 구성하여 통신된 내용은 그대로 전송하고 중간에 인터샙트하여 저장
  */
 
-@Entity
+@Document(collection = "chat")
 @NoArgsConstructor
 @Data
 public class Chat {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
     private Long roomId;
     private String sender;
     private String message;
+    private Long timestamp;
 
     @Builder
-    public Chat(Long id, Long roomId, String sender, String message) {
+    public Chat(String id, Long roomId, String sender, String message, Long timestamp) {
         this.id = id;
         this.roomId = roomId;
         this.sender = sender;
         this.message = message;
+        this.timestamp = timestamp;
     }
 
     public ChatDto toDto(){
@@ -38,6 +40,7 @@ public class Chat {
                 .roomId(this.roomId)
                 .sender(this.sender)
                 .content(this.message)
+                .timestamp(this.timestamp)
                 .build();
     }
 }
