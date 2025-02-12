@@ -3,9 +3,9 @@ spring:
     name: sk_pjt2_back_chat
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: 13.208.145.12:9092
     consumer:
-      group-id: chat
+      group-id: team5
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -28,8 +28,8 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/sk_pjt2_chat
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: p1234
+    username: admin
+    password: qwer1234
 
   jpa:
     hibernate:

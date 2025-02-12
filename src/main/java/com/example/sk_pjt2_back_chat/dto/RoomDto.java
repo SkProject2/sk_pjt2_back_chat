@@ -12,21 +12,18 @@ import lombok.Data;
 public class RoomDto {
     private Long id;
     private String name;
-    private Long seller_id;
-    private Long buyer_id;
+    private String user;
 
     @Builder
-    public RoomDto(Long id, String name, Long seller_id, Long buyer_id) {
+    public RoomDto(Long id, String name, String user) {
         this.id = id;
         this.name = name;
-        this.seller_id = seller_id;
-        this.buyer_id = buyer_id;
+        this.user = user;
     }
 
     public Room toEntity(){
         return Room.builder()
-                .buyer_id(this.buyer_id)
-                .seller_id(this.seller_id)
+                .user(this.user)
                 .name(this.name)
                 .id(this.id)
                 .build();

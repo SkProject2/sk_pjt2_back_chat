@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -16,9 +17,13 @@ public class RoomController {
 
     // 채팅방 생성
     @PostMapping("/create")
-    public RoomDto createRoom(@RequestParam("seller") String owner,
-                              @RequestHeader("user") String buyer) {
-        return roomService.createRoom(owner, buyer);
+    public List<RoomDto> createRoom(@RequestParam("user") String user1,
+                              @RequestHeader("user") String user2) {
+        List<RoomDto> roomDtos = new ArrayList<>();
+        roomDtos.add( roomService.createRoom(user1));
+        roomDtos.add( roomService.createRoom(user2));
+        return roomDtos;
+
     }
 
     // 모든 채팅방 조회

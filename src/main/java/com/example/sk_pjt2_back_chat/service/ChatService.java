@@ -65,7 +65,7 @@ public class ChatService {
     }
 
     // Kafka Consumer
-    @KafkaListener(topics = "chat", groupId = "chat")
+    @KafkaListener(topics = "chat", groupId = "team5")
     public void receiveMessageWithKafka(String message) throws JsonProcessingException {
         ChatDto chatDto = objectMapper.readValue(message, ChatDto.class);
         System.out.println("Consume Message From Kafka: " + chatDto.toString());

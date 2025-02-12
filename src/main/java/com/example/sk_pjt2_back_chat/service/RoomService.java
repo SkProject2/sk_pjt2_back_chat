@@ -42,12 +42,11 @@ public class RoomService {
         }
     }
 
-    public RoomDto createRoom(String seller, String buyer) {
+    public RoomDto createRoom(String user) {
         String roomName = UUID.randomUUID().toString();
         Room room = Room.builder()
                 .name(roomName)
-                .seller_id(Long.parseLong(seller))
-                .buyer_id(Long.parseLong(buyer))
+                .user(user)
                 .build();
         roomRepository.save(room);
 

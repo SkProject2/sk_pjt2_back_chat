@@ -23,22 +23,21 @@ public class Room {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private Long seller_id;
-    private Long buyer_id;
+    private String user;
 
 
     @Builder
-    public Room(Long id, String name, Long seller_id, Long buyer_id) {
+    public Room(Long id, String name, String user) {
         this.id = id;
         this.name = name;
-        this.seller_id = seller_id;
-        this.buyer_id = buyer_id;
+        this.user = user;
     }
 
     public RoomDto toDto(){
         return RoomDto.builder()
                 .id(id)
                 .name(name)
+                .user(user)
                 .build();
     }
 }
