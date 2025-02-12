@@ -4,6 +4,25 @@ on:
     branches:
       - main
 jobs:
+  set-docker:
+    runs-on: ubuntu-latest
+    steps:
+      # code checkout
+      - name: code checkout
+        uses: actions/checkout@v4
+
+      - name: install jdk17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: docker action
+        uses: docker/setup-buildx-action@v3
+
+      - name: login docker hub with token
+        run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_NAME }}" --password-stdin
+
   run-docker:
     runs-on: ubuntu-latest
     steps:
