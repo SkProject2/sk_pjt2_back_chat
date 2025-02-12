@@ -76,6 +76,6 @@ services:
     ports:
       - "3306:3306"         # 외부 : 내부 port 지정
     networks:
-      - all_dir_network     # 위에서 만든 네트워크로 지정
+      - chat_server    # 위에서 만든 네트워크로 지정
     command:
       --bind-address=0.0.0.0    # 모든 IP에서 접근 가능(생략가능)
