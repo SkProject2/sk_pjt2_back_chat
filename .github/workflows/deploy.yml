@@ -37,7 +37,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-#    needs: run-docker
+    needs: run-docker
     steps:
       - name: Github Repostiory checkout
         uses: actions/checkout@v4
