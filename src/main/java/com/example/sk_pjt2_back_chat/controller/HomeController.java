@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/test")
-public class TestController {
+public class HomeController {
     @GetMapping("/")
     public String test() {
-        return "test";
+        return "chat";
     }
 }
