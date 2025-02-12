@@ -8,6 +8,9 @@ jobs:
   run-docker:
     runs-on: ubuntu-latest
     steps:
+      - name: Github Repostiory checkout
+        uses: actions/checkout@v4
+        
       - name: docker action
         uses: docker/setup-buildx-action@v3
 
@@ -19,6 +22,7 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           source: "docker-compose.yml"
           target: "/home/ubuntu"
+          overwrite: true
 
       - name: Run Docker
         uses: appleboy/ssh-action@v1.2.0
@@ -44,7 +48,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Create Yml file
+      - name: Create yml file
         run: |
           echo "${{ secrets.APPLICATION_PROPERTIES }}" > ./src/main/resources/application.properties
           ls ./src/main/resources
