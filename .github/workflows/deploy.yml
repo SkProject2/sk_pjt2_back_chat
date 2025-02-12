@@ -50,7 +50,7 @@ jobs:
 
       - name: Create yml file
         run: |
-          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.properties
+          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
           ls ./src/main/resources
 
       - name: Build jar
