@@ -80,7 +80,7 @@ public class ChatService {
 //    }
 
     public List<ChatDto> getAllMessageById(String roomUUID) {
-        List<Chat> lc = chatRepository.findAllByRoomUUID(roomUUID);
+        List<Chat> lc = chatRepository.findAllByUserUUIDOrderByTimestampDesc(roomUUID);
         return lc.stream().map(
                 Chat::toDto
         ).toList();
