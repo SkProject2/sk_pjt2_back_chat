@@ -5,6 +5,7 @@ import com.example.sk_pjt2_back_chat.entity.Room;
 import com.example.sk_pjt2_back_chat.repository.RoomRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -18,6 +19,14 @@ public class RoomService {
     private ObjectMapper objectMapper;
     @Autowired
     private RoomRepository roomRepository;
+    
+    // 유저 삭제시 관련 채팅방 삭제
+    @KafkaListener(topics = "user-delete", groupId = "team5")
+    public void deleteRoomWithKafka(String email) {
+        System.out.println(email + " 유저 삭제로 인한 채팅방 삭제");
+        roomRepository.deleteRoomsByUser(email);
+        System.out.println("삭제완료");
+    }
 
     public List<RoomDto> findAllRoom(){
         List<Room> lr = roomRepository.findAll();

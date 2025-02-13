@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * 채팅 모델
@@ -21,5 +22,5 @@ public class ChatDto implements Serializable {
     private String roomUUID;
     private String sender;
     private String content;
-    private Long timestamp;
+    private LocalDateTime timestamp;
 }

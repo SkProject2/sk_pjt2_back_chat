@@ -33,11 +33,14 @@
 
     function sub(){
         const roomId = document.getElementById('roomId').value;
+        // 현제 인증 기능이 없어서 X-Auth-User 정보를 받아올 방법이 없어 임시로 생성
+        // 나중에 JWT 토큰 등으로 인증 기능이 생기면 헤더에서 가져와서 세팅해야함
         const sender = document.getElementById('sender').value;
         const monitor = document.getElementById('monitor');
 
         //var socket = new SockJS('/ws-stomp');
         // 이렇게 하면 SpringBoot 재가동 없이 테스트 가능
+        // 채팅서버이므로 Eureka가 아닌 직접 연결해야 할 것 같음
         stompClient = Stomp.client(`ws://56.155.12.67:8070/ws-stomp`);
         var header = {
             'sender': `${sender}`
@@ -46,12 +49,12 @@
         stompClient.connect(header, function(frame){console.log('Connected : '+frame)});
         monitor.innerHTML += `connected '${header.sender}'</br>`;
 
-        
         // 크롬환경에서 local테스트 중이면 allow-cors 확장자를 받아서 할 것
+        // 지금은 할 필요 없는듯?
         
         // 방 번호를 바꿨다면 기존 subscribe는 끊어야 안받음
         // 1. 방이 있는지 검사
-        axios.get(`http://13.208.145.12:8080/room/${roomId}`, {headers:{"x-user":`${sender}`}})
+        axios.get(`http://13.208.145.12:8080/room/${roomId}`, {headers:{"X-Auth-User":`${sender}`}})
         .then(function(response){
             // 2. 방이 있으면 접속
             const room = response.data;
@@ -60,15 +63,18 @@
 
             if(room.roomUUID==roomId){
                 stompClient.subscribe(`/sub/chat/room/${roomId}`, chatting , {id:`cus-${roomId}`});
-
                 // 해당 채팅방 내역 다 불러오기
                 axios.get(`http://13.208.145.12:8080/chat/room/${roomId}`)
                 .then(function(response){
+                    // 채팅 내역이 list로 올 예정, 이후 채팅 시간 순으로 불러오는 기능 추가 예정
+                    console.log("채팅창 불러오는중...");
                     response.data.map(function(data){
                         monitor.innerHTML += `${data.sender}: ${data.content}</br>`;
                     });
                 })
-                .catch(function(error){})
+                .catch(function(error){
+                    console.log("채팅창 불러오기 실패");
+                })
 
             }
             else{
@@ -91,6 +97,7 @@
             const res = JSON.parse(response.body);
             const head = response.header;
             console.log(head);
+            // 내용 출력
             monitor.innerHTML += `${res.sender}: ${res.content} </br>`;
         }
     }
@@ -100,6 +107,7 @@
         const monitor = document.getElementById('monitor');
         stompClient.unsubscribe(`cus-${roomId}`);
         stompClient.disconnect(function(){
+            // 내용 출력
             monitor.innerHTML += `disconnect </br>`;
         });
     }

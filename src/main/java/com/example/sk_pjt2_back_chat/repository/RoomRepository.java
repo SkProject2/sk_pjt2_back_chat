@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface RoomRepository extends JpaRepository<Room, Long> {
     Optional<Room> findByRoomUUIDAndUser(String roomUUID, String user);
+
+    void deleteRoomsByUser(String user);
 }

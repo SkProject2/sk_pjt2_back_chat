@@ -19,7 +19,7 @@ public class RoomController {
     // 채팅방 생성
     @PostMapping("/create")
     public List<RoomDto> createRoom(@RequestParam("user") String user1,
-                              @RequestHeader("user") String user2) {
+                              @RequestHeader("X-Auth-User") String user2) {
         List<RoomDto> roomDtos = new ArrayList<>();
         String uuid = UUID.randomUUID().toString();
         roomDtos.add( roomService.createRoom(user1, uuid));
@@ -37,14 +37,14 @@ public class RoomController {
     // 특정 채팅방 조회
     @GetMapping("/{roomUUID}")
     public RoomDto getRoom(@PathVariable("roomUUID") String roomId,
-                           @RequestHeader("x-user") String user) {
+                           @RequestHeader("X-Auth-User") String user) {
         return roomService.findRoomByIdAndUser(roomId, user);
     }
 
     // 채팅방 입장
     @GetMapping("/enter/{roomUUID}")
     public RoomDto enterRoom(@PathVariable("roomUUID") String roomId,
-                             @RequestHeader("x-user") String user) {
+                             @RequestHeader("X-Auth-User") String user) {
         // 원래 HTML이나 정보를 줘서 클라이언트단에서 조회하도록 구성해야함
         return roomService.findRoomByIdAndUser(roomId, user);
     }

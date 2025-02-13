@@ -9,17 +9,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * 채팅 관련 로직을 넣은 서비스
@@ -38,7 +33,6 @@ public class ChatService {
 
     private final SimpMessageSendingOperations messagingTemplate;
     private final KafkaTemplate<String, String> kafkaTemplate;
-    private final Date date = new Date();
 
     // Kafka Producer
     public void sendMessageWithKafka(String roomUUID, ChatDto chatDto) throws JsonProcessingException {
@@ -48,7 +42,7 @@ public class ChatService {
                 .roomUUID(roomUUID)
                 .sender(chatDto.getSender())
                 .message(chatDto.getContent())
-                .timestamp(date.getTime())
+                .timestamp(LocalDateTime.now())
                 .build();
 
         System.out.println("메세지 채널 전송 시도: " + roomUUID);
@@ -69,24 +63,24 @@ public class ChatService {
         System.out.println("Send Message: " + chatDto.toString());
     }
 
-    public void sendMessage(String roomUUID, ChatDto chatDto) {
-        // 받은 메세지 DB에 저장
-        System.out.println("메세지 채널 전송 시도: " + roomUUID);
-        Chat chat = Chat.builder()
-                .roomUUID(roomUUID)
-                .sender(chatDto.getSender())
-                .message(chatDto.getContent())
-                .build();
-        chatRepository.save(chat);
-
-        // sub에게 메세지 전달
-        System.out.println("메세지 전송 시도: " + chatDto.toString());
-        messagingTemplate.convertAndSend("/sub/chat/room/"+roomUUID, chatDto);
-    }
+    //  카프카로 인한 채팅 구현으로 미사용
+//    public void sendMessage(String roomUUID, ChatDto chatDto) {
+//        // 받은 메세지 DB에 저장
+//        System.out.println("메세지 채널 전송 시도: " + roomUUID);
+//        Chat chat = Chat.builder()
+//                .roomUUID(roomUUID)
+//                .sender(chatDto.getSender())
+//                .message(chatDto.getContent())
+//                .build();
+//        chatRepository.save(chat);
+//
+//        // sub에게 메세지 전달
+//        System.out.println("메세지 전송 시도: " + chatDto.toString());
+//        messagingTemplate.convertAndSend("/sub/chat/room/"+roomUUID, chatDto);
+//    }
 
     public List<ChatDto> getAllMessageById(String roomUUID) {
         List<Chat> lc = chatRepository.findAllByRoomUUID(roomUUID);
-//        List<Chat> lc = mongoTemplate.find(new Query(new Criteria("roomUUID").is(roomUUID)),Chat.class);
         return lc.stream().map(
                 Chat::toDto
         ).toList();

@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 /**
  * 채팅 내용을 관리하는 Entity
  * 방정보를 기준으로 전송된 내용가 보낸이를 저장, 필요하면 보낸 시각도 저장해서 순서를 보장할 생각도 있음
@@ -22,10 +24,10 @@ public class Chat {
     private String roomUUID;
     private String sender;
     private String message;
-    private Long timestamp;
+    private LocalDateTime timestamp;
 
     @Builder
-    public Chat(String id, String roomUUID, String sender, String message, Long timestamp) {
+    public Chat(String id, String roomUUID, String sender, String message, LocalDateTime timestamp) {
         this.id = id;
         this.roomUUID = roomUUID;
         this.sender = sender;
