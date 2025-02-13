@@ -51,7 +51,6 @@ jobs:
       - name: Create yml/html file
         run: |
           echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
-          echo "${{ secrets.TEST_HTML }}" > ./src/main/resources/templates/chat.html
           ls ./src/main/resources
          
 
