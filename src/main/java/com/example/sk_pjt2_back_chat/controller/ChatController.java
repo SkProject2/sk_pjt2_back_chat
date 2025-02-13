@@ -19,10 +19,10 @@ public class ChatController {
 
     // 특정 채팅방에 메세지 전송
     @MessageMapping("/room/{roomId}/message")
-    public void message(@DestinationVariable Long roomId, ChatDto chatDto) {
+    public void message(@DestinationVariable String roomUUID, ChatDto chatDto) {
         System.out.println("ChatController: 메세지 전송 시작");
         try{
-            chatService.sendMessageWithKafka(roomId, chatDto);
+            chatService.sendMessageWithKafka(roomUUID, chatDto);
         }catch (Exception e){
             e.printStackTrace();
         }

@@ -46,17 +46,17 @@ public class ChatService {
     private final Date date = new Date();
 
     // Kafka Producer
-    public void sendMessageWithKafka(Long roomId, ChatDto chatDto) throws JsonProcessingException {
+    public void sendMessageWithKafka(String roomUUID, ChatDto chatDto) throws JsonProcessingException {
         System.out.println("채팅 서비스 메시지 전송 시작");
         Chat chat = Chat.builder()
                 .id(UUID.randomUUID().toString())
-                .roomId(roomId)
+                .roomUUID(roomUUID)
                 .sender(chatDto.getSender())
                 .message(chatDto.getContent())
                 .timestamp(date.getTime())
                 .build();
 
-        System.out.println("메세지 채널 전송 시도: " + roomId);
+        System.out.println("메세지 채널 전송 시도: " + roomUUID);
         kafkaTemplate.send("chat", objectMapper.writeValueAsString(chatDto));
 
         chatRepository.save(chat);
@@ -70,15 +70,15 @@ public class ChatService {
         ChatDto chatDto = objectMapper.readValue(message, ChatDto.class);
         System.out.println("Consume Message From Kafka: " + chatDto.toString());
 
-        messagingTemplate.convertAndSend("/sub/chat/room/"+chatDto.getRoomId(), chatDto);
+        messagingTemplate.convertAndSend("/sub/chat/room/"+chatDto.getRoomUUID(), chatDto);
         System.out.println("Send Message: " + chatDto.toString());
     }
 
-    public void sendMessage(Long roomId, ChatDto chatDto) {
+    public void sendMessage(String roomUUID, ChatDto chatDto) {
         // 받은 메세지 DB에 저장
-        System.out.println("메세지 채널 전송 시도: " + roomId);
+        System.out.println("메세지 채널 전송 시도: " + roomUUID);
         Chat chat = Chat.builder()
-                .roomId(roomId)
+                .roomUUID(roomUUID)
                 .sender(chatDto.getSender())
                 .message(chatDto.getContent())
                 .build();
@@ -86,12 +86,12 @@ public class ChatService {
 
         // sub에게 메세지 전달
         System.out.println("메세지 전송 시도: " + chatDto.toString());
-        messagingTemplate.convertAndSend("/sub/chat/room/"+roomId, chatDto);
+        messagingTemplate.convertAndSend("/sub/chat/room/"+roomUUID, chatDto);
     }
 
     public List<ChatDto> getAllMessageById(String roomUUID) {
-//        List<Chat> lc = chatRepository.findAllByRoomId(roomId);
-        List<Chat> lc = mongoTemplate.find(new Query(new Criteria("roomUUID").is(roomUUID)),Chat.class);
+        List<Chat> lc = chatRepository.findAllByRoomUUID(roomUUID);
+//        List<Chat> lc = mongoTemplate.find(new Query(new Criteria("roomUUID").is(roomUUID)),Chat.class);
         return lc.stream().map(
                 Chat::toDto
         ).toList();

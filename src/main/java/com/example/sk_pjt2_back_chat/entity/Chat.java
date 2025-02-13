@@ -15,21 +15,21 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * 통신용 DTO를 별도 구성하여 통신된 내용은 그대로 전송하고 중간에 인터샙트하여 저장
  */
 
-@Document(collection = "chat")
+@Entity
 @NoArgsConstructor
 @Data
 public class Chat {
     @Id
     private String id;
-    private Long roomId;
+    private String roomUUID;
     private String sender;
     private String message;
     private Long timestamp;
 
     @Builder
-    public Chat(String id, Long roomId, String sender, String message, Long timestamp) {
+    public Chat(String id, String roomUUID, String sender, String message, Long timestamp) {
         this.id = id;
-        this.roomId = roomId;
+        this.roomUUID = roomUUID;
         this.sender = sender;
         this.message = message;
         this.timestamp = timestamp;
@@ -37,7 +37,7 @@ public class Chat {
 
     public ChatDto toDto(){
         return ChatDto.builder()
-                .roomId(this.roomId)
+                .roomUUID(this.roomUUID)
                 .sender(this.sender)
                 .content(this.message)
                 .timestamp(this.timestamp)
