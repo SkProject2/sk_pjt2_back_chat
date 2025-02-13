@@ -43,7 +43,7 @@
             'sender': `${sender}`
         };
         console.log(header.sender);
-        stompClient.connect(header, function(frame){console.log('Connected : '+frame)})
+        stompClient.connect(header, function(frame){console.log('Connected : '+frame)});
         monitor.innerHTML += `connected '${header.sender}'</br>`;
 
         
@@ -55,11 +55,11 @@
         .then(function(response){
             // 2. 방이 있으면 접속
             const room = response.data;
-            console.log(room.roomUUID)
-            console.log(roomId)
+            console.log(room.roomUUID);
+            console.log(roomId);
 
             if(room.roomUUID==roomId){
-                stompClient.subscribe(`/sub/chat/room/${roomId}`, chatting , {id:`cus-${roomId}`})
+                stompClient.subscribe(`/sub/chat/room/${roomId}`, chatting , {id:`cus-${roomId}`});
 
                 // 해당 채팅방 내역 다 불러오기
                 axios.get(`http://localhost:8070/chat/room/${roomId}`)
@@ -72,13 +72,13 @@
 
             }
             else{
-                console.log(`해당 방 없음, 방을 만들고 오세요`)
+                console.log(`해당 방 없음, 방을 만들고 오세요`);
             }
             
         })
         .catch(function(error){
             // 4. 접속오류
-            console.log(`접속오류`)
+            console.log(`접속오류`);
         })
     }
 
