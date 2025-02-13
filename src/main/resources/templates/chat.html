@@ -8,7 +8,7 @@
     <div>
         <h3>간단 메세지 체크</h3>
         <label 방 번호 선택></label>
-        <input id="roomId" type="number" min="1" placeholder="방번호"></br>
+        <input id="roomId" type="text" min="1" placeholder="방 UUID"></br>
         <input id="sender" type="text" placeholder="이름 설정"></br>
         <input id="btn1" type="submit" onclick="sub()" value="연결">
         <input id="btn2" type="submit" onclick="unsub()" value="연결해제">
@@ -51,14 +51,14 @@
         
         // 방 번호를 바꿨다면 기존 subscribe는 끊어야 안받음
         // 1. 방이 있는지 검사
-        axios.get(`http://localhost:8070/room/${roomId}`)
+        axios.get(`http://localhost:8070/room/${roomId}`, {headers:{"x-user":`${sender}`}})
         .then(function(response){
             // 2. 방이 있으면 접속
             const room = response.data;
-            console.log(room.id)
+            console.log(room.roomUUID)
             console.log(roomId)
 
-            if(response.data.id==roomId){
+            if(room.roomUUID==roomId){
                 stompClient.subscribe(`/sub/chat/room/${roomId}`, chatting , {id:`cus-${roomId}`})
 
                 // 해당 채팅방 내역 다 불러오기

@@ -30,8 +30,8 @@ public class ChatController {
 
     // 특정 채팅방의 모든 채팅내역 조회
     @GetMapping("/room/{roomId}")
-    public List<ChatDto> getRoom(@PathVariable("roomId") Long roomId) {
-        return chatService.getAllMessageById(roomId);
+    public List<ChatDto> getRoom(@PathVariable("roomId") String roomUUID) {
+        return chatService.getAllMessageById(roomUUID);
     }
 
 }

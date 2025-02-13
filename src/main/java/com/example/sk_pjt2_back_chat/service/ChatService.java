@@ -89,9 +89,9 @@ public class ChatService {
         messagingTemplate.convertAndSend("/sub/chat/room/"+roomId, chatDto);
     }
 
-    public List<ChatDto> getAllMessageById(Long roomId) {
+    public List<ChatDto> getAllMessageById(String roomUUID) {
 //        List<Chat> lc = chatRepository.findAllByRoomId(roomId);
-        List<Chat> lc = mongoTemplate.find(new Query(new Criteria("roomId").is(roomId)),Chat.class);
+        List<Chat> lc = mongoTemplate.find(new Query(new Criteria("roomUUID").is(roomUUID)),Chat.class);
         return lc.stream().map(
                 Chat::toDto
         ).toList();

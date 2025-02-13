@@ -11,20 +11,20 @@ import lombok.Data;
 @Data
 public class RoomDto {
     private Long id;
-    private String name;
+    private String  roomUUID;
     private String user;
 
     @Builder
-    public RoomDto(Long id, String name, String user) {
+    public RoomDto(Long id, String roomUUID, String user) {
         this.id = id;
-        this.name = name;
+        this.roomUUID = roomUUID;
         this.user = user;
     }
 
     public Room toEntity(){
         return Room.builder()
                 .user(this.user)
-                .name(this.name)
+                .roomUUID(this.roomUUID)
                 .id(this.id)
                 .build();
     }

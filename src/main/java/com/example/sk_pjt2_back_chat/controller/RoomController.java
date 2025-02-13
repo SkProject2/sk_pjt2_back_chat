@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/room")
@@ -20,8 +21,9 @@ public class RoomController {
     public List<RoomDto> createRoom(@RequestParam("user") String user1,
                               @RequestHeader("user") String user2) {
         List<RoomDto> roomDtos = new ArrayList<>();
-        roomDtos.add( roomService.createRoom(user1));
-        roomDtos.add( roomService.createRoom(user2));
+        String uuid = UUID.randomUUID().toString();
+        roomDtos.add( roomService.createRoom(user1, uuid));
+        roomDtos.add( roomService.createRoom(user2, uuid));
         return roomDtos;
 
     }
@@ -33,16 +35,18 @@ public class RoomController {
     }
 
     // 특정 채팅방 조회
-    @GetMapping("/{roomId}")
-    public RoomDto getRoom(@PathVariable("roomId") Long roomId) {
-        return roomService.findRoomById(roomId);
+    @GetMapping("/{roomUUID}")
+    public RoomDto getRoom(@PathVariable("roomUUID") String roomId,
+                           @RequestHeader("x-user") String user) {
+        return roomService.findRoomByIdAndUser(roomId, user);
     }
 
     // 채팅방 입장
-    @GetMapping("/enter/{roomId}")
-    public RoomDto enterRoom(@PathVariable("roomId") Long roomId) {
+    @GetMapping("/enter/{roomUUID}")
+    public RoomDto enterRoom(@PathVariable("roomUUID") String roomId,
+                             @RequestHeader("x-user") String user) {
         // 원래 HTML이나 정보를 줘서 클라이언트단에서 조회하도록 구성해야함
-        return roomService.findRoomById(roomId);
+        return roomService.findRoomByIdAndUser(roomId, user);
     }
 
 

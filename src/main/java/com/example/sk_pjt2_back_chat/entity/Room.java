@@ -22,21 +22,21 @@ public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
-    private String user;
+    private String roomUUID; // 방이름
+    private String user;    // 사용자명
 
 
     @Builder
-    public Room(Long id, String name, String user) {
+    public Room(Long id, String roomUUID, String user) {
         this.id = id;
-        this.name = name;
+        this.roomUUID = roomUUID;
         this.user = user;
     }
 
     public RoomDto toDto(){
         return RoomDto.builder()
                 .id(id)
-                .name(name)
+                .roomUUID(roomUUID)
                 .user(user)
                 .build();
     }

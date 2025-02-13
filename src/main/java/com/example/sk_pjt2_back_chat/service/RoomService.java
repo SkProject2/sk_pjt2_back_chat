@@ -28,9 +28,9 @@ public class RoomService {
                 .map(Room::toDto).collect(Collectors.toList());
     }
 
-    public RoomDto findRoomById(Long id){
-        Optional<Room> room = roomRepository.findById(id);
-        return room.map(Room::toDto).orElse(null);
+    public RoomDto findRoomByIdAndUser(String roomUUID, String user){
+        Optional<Room> rm = roomRepository.findByRoomUUIDAndUser(roomUUID, user);
+        return rm.map(Room::toDto).orElse(null);
     }
 
 
@@ -42,18 +42,12 @@ public class RoomService {
         }
     }
 
-    public RoomDto createRoom(String user) {
-        String roomName = UUID.randomUUID().toString();
+    public RoomDto createRoom(String user, String roomUUID) {
         Room room = Room.builder()
-                .name(roomName)
+                .roomUUID(roomUUID)
                 .user(user)
                 .build();
         roomRepository.save(room);
-
-        room = roomRepository.findByName(roomName).orElse(null);
-        if (room != null) {
-            return room.toDto();
-        }
-        else return null;
+        return room.toDto();
     }
 }

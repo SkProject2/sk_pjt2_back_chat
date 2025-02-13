@@ -19,7 +19,6 @@ public class StompInterceptor implements ChannelInterceptor {
         if(accessor.getCommand() == StompCommand.CONNECT) {
             String sender = accessor.getNativeHeader("sender").get(0);
             System.out.println("클라이언트 접속 시도: " + sender);
-            RoomDto rm = roomService.findRoomById(Long.parseLong(sender));
         }
         if(accessor.getCommand() == StompCommand.SUBSCRIBE) {
             String sub = accessor.getSubscriptionId();
