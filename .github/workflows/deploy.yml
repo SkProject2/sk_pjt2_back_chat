@@ -48,15 +48,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Create yml file
+      - name: Create yml/html file
         run: |
           echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
-          ls ./src/main/resources
-
-      - name: Create HTML file
-        run: |
           echo "${{ secrets.TEST_HTML }}" > ./src/main/resources/templates/chat.html
-          ls ./src/main/resources/templates
+          ls ./src/main/resources
+         
 
       - name: Build jar
         run: |
