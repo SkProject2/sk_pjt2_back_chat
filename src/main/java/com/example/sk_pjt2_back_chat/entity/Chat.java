@@ -2,11 +2,9 @@ package com.example.sk_pjt2_back_chat.entity;
 
 import com.example.sk_pjt2_back_chat.dto.ChatDto;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * 채팅 내용을 관리하는 Entity

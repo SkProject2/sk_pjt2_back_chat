@@ -7,9 +7,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -38,8 +35,6 @@ public class ChatService {
     private ChatRepository chatRepository;
     @Autowired
     private ObjectMapper objectMapper;
-    @Autowired
-    private MongoTemplate mongoTemplate;
 
     private final SimpMessageSendingOperations messagingTemplate;
     private final KafkaTemplate<String, String> kafkaTemplate;

@@ -8,7 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ChatRepository extends JpaRepository<Chat, Long> {
-    List<Chat> findAllByRoomId(Long roomId);
-
     List<Chat> findAllByRoomUUID(String roomUUID);
 }
