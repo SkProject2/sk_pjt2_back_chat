@@ -18,7 +18,7 @@ public class ChatController {
     private ChatService chatService;
 
     // 특정 채팅방에 메세지 전송
-    @MessageMapping("/room/{roomId}/message")
+    @MessageMapping("/room/{roomUUID}/message")
     public void message(@DestinationVariable String roomUUID, ChatDto chatDto) {
         System.out.println("ChatController: 메세지 전송 시작");
         try{
