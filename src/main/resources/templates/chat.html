@@ -85,6 +85,7 @@
     chatting = function(response){
         // 메세지를 받으면 처리할 행동 정의
         const monitor = document.getElementById('monitor');
+        console.log("메세지 도착")
         
         if(response.body){
             const res = JSON.parse(response.body);
@@ -105,15 +106,15 @@
 
     function send(){
         //JSON
-        var roomId = document.getElementById('roomId').value;
+        var roomUUID = document.getElementById('roomId').value;
         var sender = document.getElementById('sender').value;
         var content = document.getElementById('content').value;
         message = {
-            'roomId':roomId,
+            'roomUUID':roomUUID,
             'sender':sender,
             'content':content
         }
-        stompClient.send(`/pub/room/${roomId}/message`, {}, JSON.stringify(message));
+        stompClient.send(`/pub/room/${roomUUID}/message`, {}, JSON.stringify(message));
     }
 </script>
 </html>
