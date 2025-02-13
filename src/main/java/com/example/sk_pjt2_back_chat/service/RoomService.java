@@ -43,13 +43,14 @@ public class RoomService {
     }
 
 
-    public <T> void sendMessage(WebSocketSession session, T message) {
-        try{
-            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
+    //  STOMP 사용으로 미사용 추측
+//    public <T> void sendMessage(WebSocketSession session, T message) {
+//        try{
+//            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+//    }
 
     public RoomDto createRoom(String user, String roomUUID) {
         Room room = Room.builder()
@@ -58,5 +59,10 @@ public class RoomService {
                 .build();
         roomRepository.save(room);
         return room.toDto();
+    }
+
+    public List<RoomDto> findAllRoomByUser(String user){
+        List<Room> lr = roomRepository.findAllByUser(user);
+        return lr.stream().map(Room::toDto).collect(Collectors.toList());
     }
 }

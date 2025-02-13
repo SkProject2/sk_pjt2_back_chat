@@ -49,6 +49,12 @@ public class RoomController {
         return roomService.findRoomByIdAndUser(roomId, user);
     }
 
+    // 사용자가 참여하고 있는 모든 채팅방 조회
+    @GetMapping("/list")
+    public List<RoomDto> getRooms(@RequestHeader("X-Auth-User") String user) {
+        return roomService.findAllRoomByUser(user);
+    }
+
 
 
 }
