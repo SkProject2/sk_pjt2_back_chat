@@ -57,11 +57,11 @@
         axios.get(`http://13.208.145.12:8080/room/${roomId}`, {headers:{"X-Auth-User":`${sender}`}})
         .then(function(response){
             // 2. 방이 있으면 접속
-            const room = response.data;
+            const room = response.data.room.roomUUID;
             console.log(room.roomUUID);
             console.log(roomId);
 
-            if(room.roomUUID==roomId){
+            if(room==roomId){
                 stompClient.subscribe(`/sub/chat/room/${roomId}`, chatting , {id:`cus-${roomId}`});
                 // 해당 채팅방 내역 다 불러오기
                 axios.get(`http://13.208.145.12:8080/chat/room/${roomId}`)
