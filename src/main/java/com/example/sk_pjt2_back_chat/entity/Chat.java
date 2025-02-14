@@ -21,15 +21,16 @@ import java.time.LocalDateTime;
 public class Chat {
     @Id
     private String id;
-    private String roomUUID;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Room room;
     private String sender;
     private String message;
     private LocalDateTime timestamp;
 
     @Builder
-    public Chat(String id, String roomUUID, String sender, String message, LocalDateTime timestamp) {
+    public Chat(String id, Room room, String sender, String message, LocalDateTime timestamp) {
         this.id = id;
-        this.roomUUID = roomUUID;
+        this.room = room;
         this.sender = sender;
         this.message = message;
         this.timestamp = timestamp;
@@ -37,7 +38,7 @@ public class Chat {
 
     public ChatDto toDto(){
         return ChatDto.builder()
-                .roomUUID(this.roomUUID)
+                .roomUUID(this.room.getRoomUUID())
                 .sender(this.sender)
                 .content(this.message)
                 .timestamp(this.timestamp)

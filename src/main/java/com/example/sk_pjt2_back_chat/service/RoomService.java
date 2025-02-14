@@ -1,68 +1,39 @@
 package com.example.sk_pjt2_back_chat.service;
 
 import com.example.sk_pjt2_back_chat.dto.RoomDto;
+import com.example.sk_pjt2_back_chat.dto.RoomUserDto;
 import com.example.sk_pjt2_back_chat.entity.Room;
+import com.example.sk_pjt2_back_chat.entity.RoomUser;
 import com.example.sk_pjt2_back_chat.repository.RoomRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.sk_pjt2_back_chat.repository.RoomUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class RoomService {
     @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
     private RoomRepository roomRepository;
-    
-    // 유저 삭제시 관련 채팅방 삭제
-    @KafkaListener(topics = "user-delete", groupId = "team5")
-    public void deleteRoomWithKafka(String email) {
-        System.out.println(email + " 유저 삭제로 인한 채팅방 삭제");
-        roomRepository.deleteRoomsByUser(email);
-        System.out.println("삭제완료");
-    }
+    @Autowired
+    private RoomUserService roomUserService;
 
-    public List<RoomDto> findAllRoom(){
-        List<Room> lr = roomRepository.findAll();
-        if(lr.isEmpty()){
-            return null;
-        }
-        return lr.stream()
-                .map(Room::toDto).collect(Collectors.toList());
-    }
-
-    public RoomDto findRoomByIdAndUser(String roomUUID, String user){
-        Optional<Room> rm = roomRepository.findByRoomUUIDAndUser(roomUUID, user);
-        return rm.map(Room::toDto).orElse(null);
-    }
-
-
-    //  STOMP 사용으로 미사용 추측
-//    public <T> void sendMessage(WebSocketSession session, T message) {
-//        try{
-//            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
-//        }catch (Exception e){
-//            e.printStackTrace();
-//        }
-//    }
-
-    public RoomDto createRoom(String user, String roomUUID) {
+    public List<RoomUserDto> createRoom(String user1, String user2){
         Room room = Room.builder()
-                .roomUUID(roomUUID)
-                .user(user)
+                .roomUUID(UUID.randomUUID().toString())
                 .build();
         roomRepository.save(room);
-        return room.toDto();
+        List<RoomUserDto> lr = new ArrayList<>();
+        lr.add(roomUserService.createRoom(user1, room));
+        lr.add(roomUserService.createRoom(user2, room));
+
+        return lr;
     }
 
-    public List<RoomDto> findAllRoomByUser(String user){
-        List<Room> lr = roomRepository.findAllByUser(user);
-        return lr.stream().map(Room::toDto).collect(Collectors.toList());
+    public String deleteRoom(String roomUUID) {
+        roomRepository.delete(roomRepository.findByRoomUUID(roomUUID));
+        return "success";
     }
 }

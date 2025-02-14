@@ -1,11 +1,8 @@
 package com.example.sk_pjt2_back_chat.interceptor;
 
-import com.example.sk_pjt2_back_chat.dto.RoomDto;
 import com.example.sk_pjt2_back_chat.service.RoomService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;

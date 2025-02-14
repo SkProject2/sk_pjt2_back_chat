@@ -2,7 +2,9 @@ package com.example.sk_pjt2_back_chat.service;
 
 import com.example.sk_pjt2_back_chat.dto.ChatDto;
 import com.example.sk_pjt2_back_chat.entity.Chat;
+import com.example.sk_pjt2_back_chat.entity.Room;
 import com.example.sk_pjt2_back_chat.repository.ChatRepository;
+import com.example.sk_pjt2_back_chat.repository.RoomRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,8 @@ public class ChatService {
     @Autowired
     private ChatRepository chatRepository;
     @Autowired
+    private RoomRepository roomRepository;
+    @Autowired
     private ObjectMapper objectMapper;
 
     private final SimpMessageSendingOperations messagingTemplate;
@@ -39,7 +43,7 @@ public class ChatService {
         System.out.println("채팅 서비스 메시지 전송 시작");
         Chat chat = Chat.builder()
                 .id(UUID.randomUUID().toString())
-                .roomUUID(roomUUID)
+                .room(roomRepository.findByRoomUUID(roomUUID))
                 .sender(chatDto.getSender())
                 .message(chatDto.getContent())
                 .timestamp(LocalDateTime.now())
@@ -80,7 +84,8 @@ public class ChatService {
 //    }
 
     public List<ChatDto> getAllMessageById(String roomUUID) {
-        List<Chat> lc = chatRepository.findAllByRoomUUIDOrderByTimestampAsc(roomUUID);
+        Room room = roomRepository.findByRoomUUID(roomUUID);
+        List<Chat> lc = chatRepository.findAllByRoomOrderByTimestampAsc(room);
         return lc.stream().map(
                 Chat::toDto
         ).toList();

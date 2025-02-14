@@ -15,4 +15,9 @@ public class HomeController {
     public String test() {
         return "chat";
     }
+
+    @GetMapping("/local")
+    public String local() {
+        return "chatLocal";
+    }
 }
