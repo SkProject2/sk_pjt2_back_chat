@@ -53,9 +53,9 @@ public class RoomController {
     }
 
     // CASCADE 설정 후 사용할 예정
-//    @DeleteMapping("/delete/{roomUUID}")
-//    public String deleteRoom(@PathVariable("roomUUID") String roomUUID){
-//        return roomService.deleteRoom(roomUUID);
-//    }
+    @DeleteMapping("/delete/{roomUUID}")
+    public String deleteRoom(@PathVariable("roomUUID") String roomUUID){
+        return roomService.deleteRoom(roomUUID);
+    }
 
 }

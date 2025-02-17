@@ -54,7 +54,7 @@
         
         // 방 번호를 바꿨다면 기존 subscribe는 끊어야 안받음
         // 1. 방이 있는지 검사
-        axios.get(`http://13.208.145.12:8080/room/${roomId}`, {headers:{"X-Auth-User":`${sender}`}})
+        axios.get(`http://localhost:8070/room/${roomId}`, {headers:{"X-Auth-User":`${sender}`}})
         .then(function(response){
             // 2. 방이 있으면 접속
             const room = response.data.room.roomUUID;
@@ -64,7 +64,7 @@
             if(room==roomId){
                 stompClient.subscribe(`/sub/chat/room/${roomId}`, chatting , {id:`cus-${roomId}`});
                 // 해당 채팅방 내역 다 불러오기
-                axios.get(`http://13.208.145.12:8080/chat/room/${roomId}`)
+                axios.get(`http://localhost:8070/chat/room/${roomId}`)
                 .then(function(response){
                     // 채팅 내역이 list로 올 예정, 이후 채팅 시간 순으로 불러오는 기능 추가 예정
                     console.log("채팅창 불러오는중...");
