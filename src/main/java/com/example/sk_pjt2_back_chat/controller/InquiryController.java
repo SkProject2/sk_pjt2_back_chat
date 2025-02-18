@@ -12,9 +12,8 @@ public class InquiryController {
     private InquiryService inquiryService;
 
     @PostMapping("/upload")
-    public String upload(@RequestBody InquiryDto inquiryDto,
-                         @RequestHeader("X-Auth-User") String user) {
-        inquiryService.inquiry(inquiryDto, user);
+    public String upload(@RequestBody InquiryDto inquiryDto) {
+        inquiryService.inquiry(inquiryDto);
         return "success";
     }
 }

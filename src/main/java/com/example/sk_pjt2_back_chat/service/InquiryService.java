@@ -21,12 +21,12 @@ public class InquiryService {
         this.mailSender = mailSender;
     }
 
-    public void inquiry(InquiryDto inquiryDto, String user){
+    public void inquiry(InquiryDto inquiryDto){
         // 이메일 전송하기
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
-        message.setSubject("[문의]: "+inquiryDto.getSubject());
-        message.setText(inquiryDto.getContent() + "\n 문의자: " + user);
+        message.setSubject("[문의]: "+inquiryDto.getName());
+        message.setText(inquiryDto.getMessage() + "\n 문의자: " + inquiryDto.getEmail() + "/" + inquiryDto.getEmail());
         mailSender.send(message);
     }
 }

@@ -5,12 +5,16 @@ import lombok.Data;
 
 @Data
 public class InquiryDto {
-    private String subject;
-    private String content;
+    private String name;
+    private String email;
+    private String phone;
+    private String message;
 
     @Builder
-    public InquiryDto(String subject, String content) {
-        this.subject = subject;
-        this.content = content;
+    public InquiryDto(String name, String email, String phone, String message) {
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.message = message;
     }
 }
