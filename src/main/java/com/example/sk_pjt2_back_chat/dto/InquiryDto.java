@@ -2,8 +2,10 @@ package com.example.sk_pjt2_back_chat.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class InquiryDto {
     private String name;
     private String email;
