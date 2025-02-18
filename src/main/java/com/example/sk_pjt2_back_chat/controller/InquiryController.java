@@ -12,10 +12,14 @@ public class InquiryController {
     private InquiryService inquiryService;
 
     @PostMapping("/upload")
-    public String upload(@RequestBody InquiryDto inquiryDto) {
+    public String upload(@RequestBody String inquiryDto) {
         System.out.println("문의 전송중...");
-        inquiryService.inquiry(inquiryDto);
-        System.out.println("문의 전송 완료");
+        try{
+            inquiryService.inquiry(inquiryDto);
+            System.out.println("문의 전송 완료");
+        }catch (Exception e){}
+
+
         return "success";
     }
 }

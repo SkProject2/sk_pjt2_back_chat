@@ -1,6 +1,8 @@
 package com.example.sk_pjt2_back_chat.service;
 
 import com.example.sk_pjt2_back_chat.dto.InquiryDto;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -21,12 +23,14 @@ public class InquiryService {
         this.mailSender = mailSender;
     }
 
-    public void inquiry(InquiryDto inquiryDto){
+    public void inquiry(String ip) throws JsonProcessingException {
         // 이메일 전송하기
+        ObjectMapper objectMapper = new ObjectMapper();
+        InquiryDto inquiryDto = objectMapper.readValue(ip, InquiryDto.class);
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject("[문의]: "+inquiryDto.getName());
-        message.setText(inquiryDto.getMessage() + "\n 문의자: " + inquiryDto.getEmail() + "/" + inquiryDto.getEmail());
+        message.setText(inquiryDto.getMessage() + "\n 문의자: " + inquiryDto.getEmail() + "/" + inquiryDto.getPhone());
         mailSender.send(message);
     }
 }
