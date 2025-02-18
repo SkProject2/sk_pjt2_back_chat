@@ -14,12 +14,14 @@ public class RoomUserDto {
     private Long id;
     private Room room;
     private String user;
+    private String other;
 
     @Builder
-    public RoomUserDto(Long id, Room room, String user) {
+    public RoomUserDto(Long id, Room room, String user, String other) {
         this.id = id;
         this.room = room;
         this.user = user;
+        this.other = other;
     }
 
     public RoomUser toEntity(){
@@ -27,6 +29,7 @@ public class RoomUserDto {
                 .user(this.user)
                 .room(this.room)
                 .id(this.id)
+                .other(this.other)
                 .build();
     }
 }

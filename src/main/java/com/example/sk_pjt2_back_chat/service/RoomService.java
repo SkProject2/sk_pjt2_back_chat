@@ -26,8 +26,8 @@ public class RoomService {
                 .build();
         roomRepository.save(room);
         List<RoomUserDto> lr = new ArrayList<>();
-        lr.add(roomUserService.createRoom(user1, room));
-        lr.add(roomUserService.createRoom(user2, room));
+        lr.add(roomUserService.createRoom(user1, room, user2));
+        lr.add(roomUserService.createRoom(user2, room, user1));
 
         return lr;
     }

@@ -55,10 +55,11 @@ public class RoomUserService {
 //        }
 //    }
 
-    public RoomUserDto createRoom(String user, Room room) {
+    public RoomUserDto createRoom(String user, Room room, String other) {
         RoomUser roomUser = RoomUser.builder()
                 .room(room)
                 .user(user)
+                .other(other)
                 .build();
         roomUserRepository.save(roomUser);
         return roomUser.toDto();

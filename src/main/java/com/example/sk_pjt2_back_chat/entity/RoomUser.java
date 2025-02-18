@@ -23,13 +23,15 @@ public class RoomUser {
     @JoinColumn(name = "room_id")
     private Room room; // 방이름
     private String user;    // 사용자명
+    private String other;
 
 
     @Builder
-    public RoomUser(Long id, Room room, String user) {
+    public RoomUser(Long id, Room room, String user, String other) {
         this.id = id;
         this.room = room;
         this.user = user;
+        this.other = other;
     }
 
     public RoomUserDto toDto(){
@@ -37,6 +39,7 @@ public class RoomUser {
                 .id(id)
                 .room(room)
                 .user(user)
+                .other(other)
                 .build();
     }
 }
