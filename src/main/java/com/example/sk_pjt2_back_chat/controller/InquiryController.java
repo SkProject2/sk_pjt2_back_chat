@@ -13,7 +13,9 @@ public class InquiryController {
 
     @PostMapping("/upload")
     public String upload(@RequestBody InquiryDto inquiryDto) {
+        System.out.println("문의 전송중...");
         inquiryService.inquiry(inquiryDto);
+        System.out.println("문의 전송 완료");
         return "success";
     }
 }
