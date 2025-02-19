@@ -1,6 +1,5 @@
 package com.example.sk_pjt2_back_chat.dto;
 
-import com.example.sk_pjt2_back_chat.entity.Room;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;

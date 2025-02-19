@@ -1,9 +1,7 @@
 package com.example.sk_pjt2_back_chat.config;
 
-import com.example.sk_pjt2_back_chat.handler.WebSocketHandler;
 import com.example.sk_pjt2_back_chat.interceptor.StompInterceptor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;

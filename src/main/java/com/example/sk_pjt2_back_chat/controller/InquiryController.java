@@ -1,6 +1,5 @@
 package com.example.sk_pjt2_back_chat.controller;
 
-import com.example.sk_pjt2_back_chat.dto.InquiryDto;
 import com.example.sk_pjt2_back_chat.service.InquiryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +16,9 @@ public class InquiryController {
         try{
             inquiryService.inquiry(inquiryDto);
             System.out.println("문의 전송 완료");
-        }catch (Exception e){}
+        }catch (Exception e){
+            System.out.println("전송중 문제 발생");
+        }
 
 
         return "success";

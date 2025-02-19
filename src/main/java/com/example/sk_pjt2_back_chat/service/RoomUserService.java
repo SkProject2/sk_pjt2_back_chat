@@ -32,9 +32,6 @@ public class RoomUserService {
 
     public List<RoomUserDto> findAllRoom(){
         List<RoomUser> lr = roomUserRepository.findAll();
-        if(lr.isEmpty()){
-            return null;
-        }
         return lr.stream()
                 .map(RoomUser::toDto).collect(Collectors.toList());
     }

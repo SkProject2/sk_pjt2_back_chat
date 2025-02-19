@@ -9,6 +9,5 @@ import java.util.List;
 
 @Repository
 public interface ChatRepository extends JpaRepository<Chat, Long> {
-//    List<Chat> findAllByRoomUUID(String roomUUID);
     List<Chat> findAllByRoomOrderByTimestampAsc(Room room);
 }

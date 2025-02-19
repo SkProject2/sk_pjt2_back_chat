@@ -67,22 +67,6 @@ public class ChatService {
         System.out.println("Send Message: " + chatDto.toString());
     }
 
-    //  카프카로 인한 채팅 구현으로 미사용
-//    public void sendMessage(String roomUUID, ChatDto chatDto) {
-//        // 받은 메세지 DB에 저장
-//        System.out.println("메세지 채널 전송 시도: " + roomUUID);
-//        Chat chat = Chat.builder()
-//                .roomUUID(roomUUID)
-//                .sender(chatDto.getSender())
-//                .message(chatDto.getContent())
-//                .build();
-//        chatRepository.save(chat);
-//
-//        // sub에게 메세지 전달
-//        System.out.println("메세지 전송 시도: " + chatDto.toString());
-//        messagingTemplate.convertAndSend("/sub/chat/room/"+roomUUID, chatDto);
-//    }
-
     public List<ChatDto> getAllMessageById(String roomUUID) {
         Room room = roomRepository.findByRoomUUID(roomUUID);
         List<Chat> lc = chatRepository.findAllByRoomOrderByTimestampAsc(room);
