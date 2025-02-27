@@ -19,7 +19,7 @@ public class RoomUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     private Room room; // 방이름
     private String user;    // 사용자명
     private String other;

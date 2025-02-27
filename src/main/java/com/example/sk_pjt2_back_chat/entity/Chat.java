@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 public class Chat {
     @Id
     private String id;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     private Room room;
     private String sender;
     private String message;
