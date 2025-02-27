@@ -24,7 +24,7 @@ public class ChatController {
         try{
             chatService.sendMessageWithKafka(roomUUID, chatDto);
         }catch (Exception e){
-            e.printStackTrace();
+            System.out.println("메세지 전송중 문제발생");
         }
     }
 

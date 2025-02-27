@@ -22,7 +22,7 @@ public class RoomUserService {
     @Autowired
     private RoomRepository roomRepository;
     
-    // 유저 삭제시 관련 채팅방 삭제
+    // 유저 삭제(회원탈퇴)시 관련 채팅방 삭제
     @KafkaListener(topics = "user-delete", groupId = "team5")
     public void deleteRoomWithKafka(String email) {
         System.out.println(email + " 유저 삭제로 인한 채팅방 삭제");
@@ -41,16 +41,6 @@ public class RoomUserService {
         Optional<RoomUser> rm = roomUserRepository.findByRoomAndUser(room, user);
         return rm.map(RoomUser::toDto).orElse(null);
     }
-
-
-    //  STOMP 사용으로 미사용 추측
-//    public <T> void sendMessage(WebSocketSession session, T message) {
-//        try{
-//            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
-//        }catch (Exception e){
-//            e.printStackTrace();
-//        }
-//    }
 
     public RoomUserDto createRoom(String user, Room room, String other) {
         RoomUser roomUser = RoomUser.builder()

@@ -41,7 +41,7 @@
         //var socket = new SockJS('/ws-stomp');
         // 이렇게 하면 SpringBoot 재가동 없이 테스트 가능
         // 채팅서버이므로 Eureka가 아닌 직접 연결해야 할 것 같음
-        stompClient = Stomp.client(`ws://56.155.12.67:8070/ws-stomp`);
+        stompClient = Stomp.client(`ws://13.208.52.153:8070/ws-stomp`);
         var header = {
             'sender': `${sender}`
         };
@@ -54,7 +54,7 @@
         
         // 방 번호를 바꿨다면 기존 subscribe는 끊어야 안받음
         // 1. 방이 있는지 검사
-        await axios.get(`http://13.208.145.12:8080/room/${roomId}`, {headers:{"X-Auth-User":`${sender}`}})
+        await axios.get(`http://56.155.23.170:8080/room/${roomId}`, {headers:{"X-Auth-User":`${sender}`}})
         .then(function(response){
             // 2. 방이 있으면 접속
             const room = response.data.room.roomUUID;
@@ -65,7 +65,7 @@
                 stompClient.subscribe(`/sub/chat/room/${roomId}`, chatting , {id:`cus-${roomId}`});
                 // 해당 채팅방 내역 다 불러오기
 
-                axios.get(`http://13.208.145.12:8080/chat/room/${roomId}`)
+                axios.get(`http://56.155.23.170:8080/chat/room/${roomId}`)
                 .then(function(response){
                     // 채팅 내역이 list로 올 예정, 이후 채팅 시간 순으로 불러오는 기능 추가 예정
                     console.log("채팅창 불러오는중...");

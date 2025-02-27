@@ -17,10 +17,18 @@ public class RoomController {
     private RoomService roomService;
 
     // 채팅방 생성
+//    @PostMapping("/create")
+//    public List<RoomUserDto> createRoom(@RequestParam("user") String user1,
+//                                        @RequestHeader("X-Auth-User") String user2) {
+//        return roomService.createRoom(user1, user2);
+//    }
+
+    // 채팅방 생성 with 방제
     @PostMapping("/create")
     public List<RoomUserDto> createRoom(@RequestParam("user") String user1,
-                                        @RequestHeader("X-Auth-User") String user2) {
-        return roomService.createRoom(user1, user2);
+                                        @RequestHeader("X-Auth-User") String user2,
+                                        @RequestParam("name")String productName) {
+        return roomService.createRoomWithName(user1, user2, productName);
     }
 
     // 모든 채팅방 조회

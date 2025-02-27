@@ -1,6 +1,5 @@
 package com.example.sk_pjt2_back_chat.interceptor;
 
-import com.example.sk_pjt2_back_chat.service.RoomService;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
