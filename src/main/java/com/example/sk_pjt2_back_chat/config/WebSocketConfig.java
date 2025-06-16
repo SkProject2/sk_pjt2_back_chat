@@ -1,7 +1,9 @@
 package com.example.sk_pjt2_back_chat.config;
 
 import com.example.sk_pjt2_back_chat.interceptor.StompInterceptor;
+import com.example.sk_pjt2_back_chat.service.UserSessionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -11,6 +13,9 @@ import org.springframework.web.socket.config.annotation.*;
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+    // STOMP 연결시 Redis 기록용
+    @Autowired
+    private UserSessionService userSessionService;
 
     // STOMP 사용을 위한 Message Broker 설정
     @Override
@@ -33,6 +38,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(new StompInterceptor());
+        registration.interceptors(new StompInterceptor(userSessionService));
     }
 }
