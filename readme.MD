@@ -1,35 +1,93 @@
-# SK PJT2 Re:Use 채팅 서비스
-작성자: 김민석
+# Re:Use Chat Service
 
-## 사용 기술
-- Redis : 실시간 참여자 관리
-- MySQL : 채팅기록 저장
-- Kafka : 메세지 큐 / 서버간 데이터 통합 수집
-- Stomp : 실시간 메시지 전달용 웹 소켓 기반 통신
+> 실시간 중고거래 플랫폼을 위한 WebSocket(STOMP) 기반 채팅 마이크로서비스
 
-## 스토리보드
-1. 채팅 과정은 Stomp의 양방향 통신 소켓을 이용해 이루어진다(구현완료)
-2. 만약 여러 서버가 있다면 Kafka의 외부 브로커 기능을 이용해 통신
-3. 채팅 내역은 MongoDB에 저장되어 관리됨(지금은 임시로 MySQL에 저장중)
+## 🚀 Overview
 
-## 채팅 과정
-기본적으로 WebSocket을 이용하여 채팅을 한다
-다만 중고거래 플렛폼 특성상 실시간 채팅이 아니라 미리 보내놓는 경우가 있으므로
-이전에 보내놓은 채팅 기록을 저장하고 다시 접속했을 때 확인할 수 있어야 한다.
-따라서 실시간 채팅으로 구성하되 채팅 기록을 DB에 기록할 필요가 있다.
+Re:Use 중고거래 플랫폼의 핵심 채팅 서비스입니다. WebSocket과 STOMP 프로토콜을 활용한 실시간 양방향 통신을 제공하며, Kafka를 통한 확장 가능한 마이크로서비스 아키텍처로 구현되었습니다.
 
-전송된 채팅을 보기 위해선 GET 메소드 등을 이용해 조회하고자 하는 채팅방 ID기준으로 불러오고
-ID순이나 시간순서대로 불러오면 된다.
+### ✨ Key Features
 
-https://youtu.be/_F6k0tg8ODo?si=DtKhxVeExux6Izg_
-당근에서 채팅 기능 만든방법 정의
-보면 key-value store에서 현재 접속중인 유저를 관리중인데 이것이 redis인 것 같다. 
+- **🔄 실시간 채팅**: WebSocket + STOMP 기반 즉석 메시징
+- **📱 1:1 채팅방**: 구매자-판매자 간 개별 채팅방 자동 생성
+- **💾 채팅 히스토리**: MySQL 기반 채팅 기록 영구 저장
+- **⚡ 세션 관리**: Redis를 활용한 실시간 사용자 세션 추적
+- **🔗 확장성**: Kafka 기반 멀티 서버 메시지 동기화
+- **📧 문의 기능**: JavaMail을 통한 고객 문의 처리
 
-## 카프카 처리 과정
-정확하지는 않지만 현재 만든 채팅 서버는 단순히 유저랑 서버를 연결시키는 서버인 것 같다.
-카프카를 이용해 유저 연결 서버에서 메시징 서버로 보내고, 메시징 서버의 컨슈머에 의해 다시 유저가 접속중인 서버로 보낸 뒤
-전송하여 처리되는 것 같음.
-이렇게 구현해야 여러 서버가 생겨도 카프카에 의해 처리되므로 확장성이 좋아진다
-그러면 메시징 서버를 별도로 구성해야하나?
-그럼 이 연결 서버는 카프카 프로듀서만 있으면 되나?
+---
 
+## 🛠️ Tech Stack
+
+### Backend
+- **Java 17** - Core Language
+- **Spring Boot 3.4.2** - Application Framework
+- **Spring WebSocket & STOMP** - Real-time Communication
+- **Spring Security** - Security Layer
+- **Spring Data JPA** - Data Access
+
+### Infrastructure
+- **MySQL** - Chat History & Room Management
+- **Redis** - Session Store & Caching
+- **Apache Kafka** - Message Queue & Inter-service Communication
+- **Docker Compose** - Development Environment
+
+### DevOps
+- **GitHub Actions** - CI/CD Pipeline
+- **AWS EC2** - Production Deployment
+- **Gradle** - Build & Dependency Management
+
+### Backend
+- **Java 17** - Core Language
+- **Spring Boot 3.4.2** - Application Framework
+- **Spring WebSocket & STOMP** - Real-time Communication
+- **Spring Security** - Security Layer
+- **Spring Data JPA** - Data Access
+
+### Infrastructure
+- **MySQL** - Chat History & Room Management
+- **Redis** - Session Store & Caching
+- **Apache Kafka** - Message Queue & Inter-service Communication
+- **Docker Compose** - Development Environment
+
+### DevOps
+- **GitHub Actions** - CI/CD Pipeline
+- **AWS EC2** - Production Deployment
+- **Gradle** - Build & Dependency Management
+
+---
+
+## 🗂️ Project Structure
+
+```
+src/main/java/com/example/sk_pjt2_back_chat/
+├── 📁 config/           # 설정 파일들
+│   ├── SecurityConfig.java
+│   ├── WebSocketConfig.java
+│   └── RedisConfig.java
+├── 📁 controller/       # REST & WebSocket 컨트롤러
+│   ├── ChatController.java
+│   ├── RoomController.java
+│   └── InquiryController.java
+├── 📁 service/          # 비즈니스 로직
+│   ├── ChatService.java
+│   ├── RoomService.java
+│   └── UserSessionService.java
+├── 📁 entity/           # JPA 엔티티
+│   ├── Chat.java
+│   ├── Room.java
+│   └── RoomUser.java
+├── 📁 dto/              # 데이터 전송 객체
+├── 📁 repository/       # 데이터 액세스 계층
+└── 📁 interceptor/      # STOMP 인터셉터
+```
+---
+## 🔄 Message Flow
+
+1. **채팅방 생성** → 구매자가 상품에 대해 판매자와 채팅 시작
+2. **WebSocket 연결** → 클라이언트가 `/ws-stomp` 엔드포인트로 연결
+3. **방 구독** → `/sub/chat/room/{roomUUID}` 토픽 구독
+4. **메시지 전송** → `/pub/room/{roomUUID}/message`로 메시지 발행
+5. **Kafka 브로드캐스트** → 메시지가 모든 서버 인스턴스로 전파
+6. **실시간 수신** → 구독 중인 클라이언트들이 즉시 메시지 수신
+7. **영구 저장** → MySQL에 채팅 히스토리 저장

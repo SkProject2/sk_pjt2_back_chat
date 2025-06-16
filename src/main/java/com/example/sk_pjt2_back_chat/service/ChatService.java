@@ -22,7 +22,7 @@ import java.util.UUID;
  * 채팅 관련 로직을 넣은 서비스
  * STOMP을 이용해 문자 전송 등을 담당할 예정
  * 여기서 Kafka Producer를 사용해 Kafka로 보낸다.
- *   이후 Kafka Consumer가 알아서 Kafka에서 가져올것이므로 신경 X
+ * 이후 Kafka Consumer가 알아서 Kafka에서 가져올것이므로 신경 X
  */
 
 @Service
@@ -34,6 +34,8 @@ public class ChatService {
     private RoomRepository roomRepository;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private UserSessionService userSessionService;
 
     private final SimpMessageSendingOperations messagingTemplate;
     private final KafkaTemplate<String, String> kafkaTemplate;
@@ -58,13 +60,14 @@ public class ChatService {
     }
 
     // Kafka Consumer
-    @KafkaListener(topics = "chat", groupId = "team5")
+    @KafkaListener(topics = "chat", groupId = "team5-${server.id}") // 서버별 다른 그룹
     public void receiveMessageWithKafka(String message) throws JsonProcessingException {
         ChatDto chatDto = objectMapper.readValue(message, ChatDto.class);
-        System.out.println("Consume Message From Kafka: " + chatDto.toString());
 
-        messagingTemplate.convertAndSend("/sub/chat/room/"+chatDto.getRoomUUID(), chatDto);
-        System.out.println("Send Message: " + chatDto.toString());
+        // 이 서버에 접속한 사용자들에게만 전송
+        if (userSessionService.hasUsersInRoom(chatDto.getRoomUUID())) {
+            messagingTemplate.convertAndSend("/sub/chat/room/" + chatDto.getRoomUUID(), chatDto);
+        }
     }
 
     public List<ChatDto> getAllMessageById(String roomUUID) {
