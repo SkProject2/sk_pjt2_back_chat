@@ -36,25 +36,6 @@ Re:Use 중고거래 플랫폼의 핵심 채팅 서비스입니다. WebSocket과 
 - **GitHub Actions** - CI/CD Pipeline
 - **AWS EC2** - Production Deployment
 - **Gradle** - Build & Dependency Management
-
-### Backend
-- **Java 17** - Core Language
-- **Spring Boot 3.4.2** - Application Framework
-- **Spring WebSocket & STOMP** - Real-time Communication
-- **Spring Security** - Security Layer
-- **Spring Data JPA** - Data Access
-
-### Infrastructure
-- **MySQL** - Chat History & Room Management
-- **Redis** - Session Store & Caching
-- **Apache Kafka** - Message Queue & Inter-service Communication
-- **Docker Compose** - Development Environment
-
-### DevOps
-- **GitHub Actions** - CI/CD Pipeline
-- **AWS EC2** - Production Deployment
-- **Gradle** - Build & Dependency Management
-
 ---
 
 ## 🗂️ Project Structure
