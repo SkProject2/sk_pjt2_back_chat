@@ -2,128 +2,452 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>멀티서버 채팅 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .server-section {
+            background: #e3f2fd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #2196f3;
+        }
+        .input-group {
+            margin: 10px 0;
+        }
+        label {
+            display: inline-block;
+            width: 100px;
+            font-weight: bold;
+        }
+        input[type="text"], select {
+            padding: 5px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        button {
+            padding: 8px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            background: #2196f3;
+            color: white;
+        }
+        button:hover {
+            background: #1976d2;
+        }
+        button.disconnect {
+            background: #f44336;
+        }
+        button.disconnect:hover {
+            background: #d32f2f;
+        }
+        #monitor {
+            border: 1px solid #ddd;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            background: #fafafa;
+            font-family: monospace;
+            margin-top: 20px;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            margin: 5px 0;
+        }
+        .connected {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+        .disconnected {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+    </style>
 </head>
 <body>
-    <div>
-        <h3>간단 메세지 체크</h3>
-        <label 방 번호 선택></label>
-        <input id="roomId" type="text" min="1" placeholder="방 UUID"></br>
-        <input id="sender" type="text" placeholder="이름 설정"></br>
-        <input id="btn1" type="submit" onclick="sub()" value="연결">
-        <input id="btn2" type="submit" onclick="unsub()" value="연결해제">
+<div class="container">
+    <h1>🚀 멀티서버 채팅 테스트</h1>
 
+    <div class="server-section">
+        <h3>📡 서버 연결 설정</h3>
+        <div class="input-group">
+            <label>서버 선택:</label>
+            <select id="serverSelect">
+                <option value="localhost:8070">Chat Server 1 (Port 8070)</option>
+                <option value="localhost:8071">Chat Server 2 (Port 8071)</option>
+                <option value="custom">사용자 정의</option>
+            </select>
+        </div>
+
+        <div class="input-group" id="customServerDiv" style="display: none;">
+            <label>서버 주소:</label>
+            <input id="customServer" type="text" placeholder="localhost:8072">
+        </div>
+
+        <div class="input-group">
+            <label>방 UUID:</label>
+            <input id="roomId" type="text" placeholder="방 UUID 입력">
+        </div>
+
+        <div class="input-group">
+            <label>사용자명:</label>
+            <input id="sender" type="text" placeholder="사용자 이름 입력">
+        </div>
+
+        <div>
+            <button id="btn1" onclick="sub()">🔗 연결</button>
+            <button id="btn2" onclick="unsub()" class="disconnect">❌ 연결해제</button>
+            <span id="connectionStatus" class="status disconnected">연결 안됨</span>
+        </div>
     </div>
-    <div>
-        <h3>보낼 메세지</h3>
-        <input id="content" type="text" placeholder="보낼 메세지">
-        <input type="submit" onclick="send()">
+
+    <div class="server-section">
+        <h3>💬 메시지 전송</h3>
+        <div class="input-group">
+            <input id="content" type="text" placeholder="보낼 메시지" style="width: 60%;">
+            <button onclick="send()">📤 전송</button>
+        </div>
     </div>
-    <div id="monitor">
 
+    <div class="server-section">
+        <h3>🔍 디버그 & 모니터링</h3>
+        <button onclick="checkAllSessions()">📊 전체 세션 현황</button>
+        <button onclick="checkMySession()">👤 내 세션 정보</button>
+        <button onclick="checkServerStatus()">🔍 서버 상태 확인</button>
+        <button onclick="clearMonitor()">🗑️ 로그 지우기</button>
     </div>
-    
 
+    <div class="server-section">
+        <h3>📜 채팅 로그</h3>
+        <div id="monitor"></div>
+    </div>
+</div>
 
-</body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 <script>
+    let stompClient = null;
+    let currentServer = null;
 
-    async function sub(){
-        const roomId = document.getElementById('roomId').value;
-        // 현제 인증 기능이 없어서 X-Auth-User 정보를 받아올 방법이 없어 임시로 생성
-        // 나중에 JWT 토큰 등으로 인증 기능이 생기면 헤더에서 가져와서 세팅해야함
-        const sender = document.getElementById('sender').value;
+    // 서버 선택 변경 시
+    document.getElementById('serverSelect').addEventListener('change', function() {
+        const customDiv = document.getElementById('customServerDiv');
+        if (this.value === 'custom') {
+            customDiv.style.display = 'block';
+        } else {
+            customDiv.style.display = 'none';
+        }
+    });
+
+    // 엔터키로 메시지 전송
+    document.getElementById('content').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            send();
+        }
+    });
+
+    function getSelectedServer() {
+        const serverSelect = document.getElementById('serverSelect');
+        if (serverSelect.value === 'custom') {
+            return document.getElementById('customServer').value || 'localhost:8070';
+        }
+        return serverSelect.value;
+    }
+
+    function getServerUrl(server) {
+        return `ws://${server}/ws-stomp`;
+    }
+
+    function getApiUrl(server) {
+        return `http://${server}`;
+    }
+
+    function updateConnectionStatus(connected, server = null) {
+        const status = document.getElementById('connectionStatus');
+        if (connected) {
+            status.className = 'status connected';
+            status.textContent = `연결됨: ${server}`;
+        } else {
+            status.className = 'status disconnected';
+            status.textContent = '연결 안됨';
+        }
+    }
+
+    function addToMonitor(message, type = 'info') {
         const monitor = document.getElementById('monitor');
-
-        //var socket = new SockJS('/ws-stomp');
-        // 이렇게 하면 SpringBoot 재가동 없이 테스트 가능
-        // 채팅서버이므로 Eureka가 아닌 직접 연결해야 할 것 같음
-        stompClient = Stomp.client(`ws:/localhost:8070/ws-stomp`);
-        var header = {
-            'sender': `${sender}`
+        const timestamp = new Date().toLocaleTimeString();
+        const colorMap = {
+            'info': '#333',
+            'success': '#4caf50',
+            'error': '#f44336',
+            'warning': '#ff9800',
+            'message': '#2196f3'
         };
-        console.log(header.sender);
-        stompClient.connect(header, function(frame){console.log('Connected : '+frame)});
-        monitor.innerHTML += `connected '${header.sender}'</br>`;
 
-        // 크롬환경에서 local테스트 중이면 allow-cors 확장자를 받아서 할 것
-        // 지금은 할 필요 없는듯?
-        
-        // 방 번호를 바꿨다면 기존 subscribe는 끊어야 안받음
-        // 1. 방이 있는지 검사
-        await axios.get(`http://localhost:8070/room/${roomId}`, {headers:{"X-Auth-User":`${sender}`}})
-        .then(function(response){
-            // 2. 방이 있으면 접속
+        monitor.innerHTML += `<div style="color: ${colorMap[type]};">[${timestamp}] ${message}</div>`;
+        monitor.scrollTop = monitor.scrollHeight;
+    }
+
+    async function sub() {
+        const roomId = document.getElementById('roomId').value;
+        const sender = document.getElementById('sender').value;
+
+        if (!roomId || !sender) {
+            addToMonitor('❌ 방 UUID와 사용자명을 모두 입력해주세요.', 'error');
+            return;
+        }
+
+        try {
+            currentServer = getSelectedServer();
+            const wsUrl = getServerUrl(currentServer);
+            const apiUrl = getApiUrl(currentServer);
+
+            addToMonitor(`🔄 ${currentServer} 서버에 연결 시도 중...`, 'info');
+
+            // WebSocket 연결
+            stompClient = Stomp.client(wsUrl);
+            const header = { 'sender': sender };
+
+            stompClient.connect(header, function(frame) {
+                addToMonitor(`✅ WebSocket 연결 성공: ${currentServer}`, 'success');
+                updateConnectionStatus(true, currentServer);
+
+                // 방 존재 확인 및 입장
+                checkRoomAndSubscribe(roomId, sender, apiUrl);
+
+            }, function(error) {
+                addToMonitor(`❌ WebSocket 연결 실패: ${error}`, 'error');
+                updateConnectionStatus(false);
+            });
+
+        } catch (error) {
+            addToMonitor(`❌ 연결 중 오류: ${error.message}`, 'error');
+            updateConnectionStatus(false);
+        }
+    }
+
+    async function checkRoomAndSubscribe(roomId, sender, apiUrl) {
+        try {
+            // 방 존재 확인
+            const response = await axios.get(`${apiUrl}/room/${roomId}`, {
+                headers: {"X-Auth-User": sender}
+            });
+
             const room = response.data.room.roomUUID;
-            console.log(room);
-            console.log(roomId);
+            if (room === roomId) {
+                // 방 구독
+                stompClient.subscribe(`/sub/chat/room/${roomId}`, chatting, {id: `cus-${roomId}`});
+                addToMonitor(`📡 채팅방 구독 완료: ${roomId}`, 'success');
 
-            if(room==roomId){
-                stompClient.subscribe(`/sub/chat/room/${roomId}`, chatting , {id:`cus-${roomId}`});
-                // 해당 채팅방 내역 다 불러오기
-                axios.get(`http://localhost:8070/chat/room/${roomId}`)
-                .then(function(response){
-                    // 채팅 내역이 list로 올 예정, 이후 채팅 시간 순으로 불러오는 기능 추가 예정
-                    console.log("채팅창 불러오는중...");
-                    response.data.map(function(data){
-                        monitor.innerHTML += `${data.sender}: ${data.content}</br>`;
-                    });
-                })
-                .catch(function(error){
-                    console.log("채팅창 불러오기 실패");
-                })
+                // 채팅 히스토리 로드
+                loadChatHistory(roomId, apiUrl);
+            } else {
+                addToMonitor('❌ 방 정보가 일치하지 않습니다.', 'error');
+            }
 
-            }
-            else{
-                console.log(`해당 방 없음, 방을 만들고 오세요`);
-            }
-            
-        })
-        .catch(function(error){
-            // 4. 접속오류
-            console.log(`접속오류`);
-            console.log(error);
-        })
+        } catch (error) {
+            addToMonitor(`❌ 방 접근 실패: ${error.message}`, 'error');
+            addToMonitor('💡 방이 존재하지 않거나 권한이 없습니다.', 'warning');
+        }
     }
 
-    chatting = function(response){
-        // 메세지를 받으면 처리할 행동 정의
-        const monitor = document.getElementById('monitor');
-        console.log("메세지 도착")
-        
-        if(response.body){
+    async function loadChatHistory(roomId, apiUrl) {
+        try {
+            const response = await axios.get(`${apiUrl}/chat/room/${roomId}`);
+            addToMonitor('📜 채팅 히스토리 로딩...', 'info');
+
+            response.data.forEach(function(data) {
+                addToMonitor(`💬 ${data.sender}: ${data.content}`, 'message');
+            });
+
+            addToMonitor('✅ 채팅 히스토리 로딩 완료', 'success');
+        } catch (error) {
+            addToMonitor('❌ 채팅 히스토리 로딩 실패', 'error');
+        }
+    }
+
+    function chatting(response) {
+        if (response.body) {
             const res = JSON.parse(response.body);
-            const head = response.header;
-            console.log(head);
-            // 내용 출력
-            monitor.innerHTML += `${res.sender}: ${res.content} </br>`;
+            addToMonitor(`💬 ${res.sender}: ${res.content}`, 'message');
         }
     }
 
-    function unsub(){
-        var roomId = document.getElementById('roomId').value;
-        const monitor = document.getElementById('monitor');
-        stompClient.unsubscribe(`cus-${roomId}`);
-        stompClient.disconnect(function(){
-            // 내용 출력
-            monitor.innerHTML += `disconnect </br>`;
-        });
+    function unsub() {
+        if (stompClient) {
+            const roomId = document.getElementById('roomId').value;
+            if (roomId) {
+                stompClient.unsubscribe(`cus-${roomId}`);
+            }
+
+            stompClient.disconnect(function() {
+                addToMonitor('🔌 연결 해제됨', 'warning');
+                updateConnectionStatus(false);
+            });
+
+            stompClient = null;
+            currentServer = null;
+        }
     }
 
-    function send(){
-        //JSON
-        var roomUUID = document.getElementById('roomId').value;
-        var sender = document.getElementById('sender').value;
-        var content = document.getElementById('content').value;
-        message = {
-            'roomUUID':roomUUID,
-            'sender':sender,
-            'content':content
+    function send() {
+        if (!stompClient || !currentServer) {
+            addToMonitor('❌ 서버에 연결되지 않았습니다.', 'error');
+            return;
         }
-        stompClient.send(`/pub/room/${roomUUID}/message`, {}, JSON.stringify(message));
+
+        const roomUUID = document.getElementById('roomId').value;
+        const sender = document.getElementById('sender').value;
+        const content = document.getElementById('content').value;
+
+        if (!content.trim()) {
+            addToMonitor('❌ 메시지를 입력해주세요.', 'error');
+            return;
+        }
+
+        const message = {
+            'roomUUID': roomUUID,
+            'sender': sender,
+            'content': content
+        };
+
+        try {
+            stompClient.send(`/pub/room/${roomUUID}/message`, {}, JSON.stringify(message));
+            document.getElementById('content').value = '';
+            addToMonitor(`📤 메시지 전송됨: ${content}`, 'info');
+        } catch (error) {
+            addToMonitor(`❌ 메시지 전송 실패: ${error.message}`, 'error');
+        }
     }
+
+    function clearMonitor() {
+        document.getElementById('monitor').innerHTML = '';
+        addToMonitor('🗑️ 로그가 지워졌습니다.', 'info');
+    }
+
+    async function checkServerStatus() {
+        const server = getSelectedServer();
+        const apiUrl = getApiUrl(server);
+
+        try {
+            addToMonitor(`🔍 서버 상태 확인 중: ${server}`, 'info');
+            const response = await axios.get(`${apiUrl}/chat/test`, { timeout: 5000 });
+            addToMonitor(`✅ 서버 응답: ${response.data}`, 'success');
+        } catch (error) {
+            addToMonitor(`❌ 서버 응답 없음: ${server}`, 'error');
+        }
+    }
+
+    // 전체 세션 현황 조회
+    async function checkAllSessions() {
+        const server = getSelectedServer();
+        const apiUrl = getApiUrl(server);
+
+        try {
+            addToMonitor(`📊 전체 세션 현황 조회 중...`, 'info');
+            const response = await axios.get(`${apiUrl}/chat/debug/sessions`, { timeout: 10000 });
+            const data = response.data;
+
+            addToMonitor(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`, 'info');
+            addToMonitor(`📊 세션 현황 리포트 (${data.timestamp})`, 'success');
+            addToMonitor(`🖥️ 현재 조회 서버: ${data.currentServerId}`, 'info');
+
+            // 서버별 사용자 현황
+            addToMonitor(`\n🌐 서버별 접속 사용자:`, 'info');
+            if (data.serverUsers && Object.keys(data.serverUsers).length > 0) {
+                for (const [serverId, users] of Object.entries(data.serverUsers)) {
+                    addToMonitor(`  ├─ ${serverId}: [${Array.from(users).join(', ')}]`, 'message');
+                }
+            } else {
+                addToMonitor(`  └─ 접속한 사용자 없음`, 'warning');
+            }
+
+            // 현재 서버 사용자
+            addToMonitor(`\n🏠 현재 서버(${data.currentServerId}) 사용자:`, 'info');
+            if (data.currentServerUsers && data.currentServerUsers.length > 0) {
+                addToMonitor(`  └─ [${Array.from(data.currentServerUsers).join(', ')}]`, 'success');
+            } else {
+                addToMonitor(`  └─ 현재 서버에 접속한 사용자 없음`, 'warning');
+            }
+
+            // 사용자별 상세 정보
+            if (data.userDetails && Object.keys(data.userDetails).length > 0) {
+                addToMonitor(`\n👥 사용자별 상세 정보:`, 'info');
+                for (const [userId, details] of Object.entries(data.userDetails)) {
+                    addToMonitor(`  ├─ ${userId}:`, 'message');
+                    addToMonitor(`  │  ├─ 서버: ${details.serverId}`, 'message');
+                    addToMonitor(`  │  ├─ URL: ${details.serverUrl}`, 'message');
+                    addToMonitor(`  │  ├─ 접속시간: ${new Date(details.connectTime).toLocaleString()}`, 'message');
+                    addToMonitor(`  │  └─ 마지막활동: ${new Date(details.lastActiveTime).toLocaleString()}`, 'message');
+                }
+            }
+
+            addToMonitor(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`, 'info');
+
+        } catch (error) {
+            addToMonitor(`❌ 세션 현황 조회 실패: ${error.message}`, 'error');
+        }
+    }
+
+    // 내 세션 정보 조회
+    async function checkMySession() {
+        const sender = document.getElementById('sender').value;
+        if (!sender) {
+            addToMonitor('❌ 사용자명을 먼저 입력해주세요.', 'error');
+            return;
+        }
+
+        const server = getSelectedServer();
+        const apiUrl = getApiUrl(server);
+
+        try {
+            addToMonitor(`👤 ${sender} 사용자 세션 정보 조회 중...`, 'info');
+            const response = await axios.get(`${apiUrl}/chat/debug/sessions/${sender}`, { timeout: 5000 });
+            const data = response.data;
+
+            if (data.sessionInfo) {
+                addToMonitor(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`, 'info');
+                addToMonitor(`👤 ${sender} 세션 정보:`, 'success');
+                addToMonitor(`  ├─ 세션 ID: ${data.sessionInfo.sessionId}`, 'message');
+                addToMonitor(`  ├─ 접속 서버: ${data.sessionInfo.serverId}`, 'message');
+                addToMonitor(`  ├─ 서버 주소: ${data.sessionInfo.serverHost}:${data.sessionInfo.serverPort}`, 'message');
+                addToMonitor(`  ├─ WebSocket URL: ${data.sessionInfo.serverUrl}`, 'message');
+                addToMonitor(`  ├─ 접속 시간: ${new Date(data.sessionInfo.connectTime).toLocaleString()}`, 'message');
+                addToMonitor(`  ├─ 마지막 활동: ${new Date(data.sessionInfo.lastActiveTime).toLocaleString()}`, 'message');
+                addToMonitor(`  └─ 현재 서버와 동일: ${data.isOnThisServer ? '✅' : '❌'}`, data.isOnThisServer ? 'success' : 'warning');
+                addToMonitor(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`, 'info');
+            } else {
+                addToMonitor(`❌ ${sender} 사용자의 세션 정보를 찾을 수 없습니다.`, 'error');
+                addToMonitor(`💡 먼저 서버에 연결해주세요.`, 'warning');
+            }
+
+        } catch (error) {
+            addToMonitor(`❌ 세션 정보 조회 실패: ${error.message}`, 'error');
+        }
+    }
+
+    // 페이지 로드 시 초기 메시지
+    window.addEventListener('load', function() {
+        addToMonitor('🎉 멀티서버 채팅 테스트 페이지 로드됨', 'success');
+        addToMonitor('💡 서버를 선택하고 방 UUID, 사용자명을 입력한 후 연결하세요.', 'info');
+    });
 </script>
+</body>
 </html>

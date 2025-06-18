@@ -8,7 +8,7 @@ volumes:
   mongo:
 
 services:
-##########################################################
+  ##########################################################
   zookeeper:
     image: "confluentinc/cp-zookeeper:latest"
     environment:
@@ -17,7 +17,7 @@ services:
     networks:
       - chat_server
 
-##########################################################
+  ##########################################################
   kafka:
     image: "confluentinc/cp-kafka:latest"
     depends_on:
@@ -48,7 +48,7 @@ services:
     networks:
       - chat_server
 
-##########################################################
+  ##########################################################
   mongodb:
     image: mongo
     restart: always
@@ -62,21 +62,30 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=rootuser
       - MONGO_INITDB_ROOT_PASSWORD=rootpass
 
-##########################################################
-#                   RDS로 대체
-#  mysql:
-#    image: mysql              # 이미지명, docker.hun에서 설치
-#    restart: always           # 비정상적으로 서비스가 죽으면 재가동
-#    environment:
-#      - MYSQL_ROOT_PASSWORD=p1234  # root pw
-#      - MYSQL_DATABASE=sk_pjt2_chat       # 초기 db명
-#      - MYSQL_USER=guest          # 유저 id
-#      - MYSQL_PASSWORD=p1234       # 유저 pw
-#    volumes:
-#      - mysql:/var/lib/mysql # DB컨테이너가 삭제되어도 데이터 유지
-#    ports:
-#      - "3306:3306"         # 외부 : 내부 port 지정
-#    networks:
-#      - chat_server    # 위에서 만든 네트워크로 지정
-#    command:
-#      --bind-address=0.0.0.0    # 모든 IP에서 접근 가능(생략가능)
+  ##########################################################
+  redis:
+    image: redis:7-alpine        # 가벼운 Alpine 리눅스 기반 Redis 7 이미지
+    restart: always
+    ports:
+      - "6379:6379"             # Redis 기본 포트
+    networks:
+      - chat_server
+
+  ##########################################################
+  #                   RDS로 대체
+  mysql:
+    image: mysql              # 이미지명, docker.hun에서 설치
+    restart: always           # 비정상적으로 서비스가 죽으면 재가동
+    environment:
+      - MYSQL_ROOT_PASSWORD=p1234  # root pw
+      - MYSQL_DATABASE=sk_pjt2_chat       # 초기 db명
+      - MYSQL_USER=guest          # 유저 id
+      - MYSQL_PASSWORD=p1234       # 유저 pw
+    volumes:
+      - mysql:/var/lib/mysql # DB컨테이너가 삭제되어도 데이터 유지
+    ports:
+      - "3306:3306"         # 외부 : 내부 port 지정
+    networks:
+      - chat_server    # 위에서 만든 네트워크로 지정
+    command:
+      --bind-address=0.0.0.0    # 모든 IP에서 접근 가능(생략가능)
