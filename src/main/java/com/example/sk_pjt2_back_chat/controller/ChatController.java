@@ -26,7 +26,8 @@ public class ChatController {
     public void message(@DestinationVariable String roomUUID, ChatDto chatDto) {
         System.out.println("ChatController: 메세지 전송 시작");
         try{
-            chatService.sendMessageWithKafka(roomUUID, chatDto);
+            // chatService.sendMessageWithKafka(roomUUID, chatDto);  // kafka fan-out방식에서 Redis Pub/Sub 구조로 변경
+            chatService.sendMessage(roomUUID, chatDto);
         }catch (Exception e){
             System.out.println("메세지 전송중 문제발생");
         }

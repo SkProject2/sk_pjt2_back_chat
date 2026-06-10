@@ -1,21 +1,27 @@
 // StompInterceptor.java 수정
 package com.example.sk_pjt2_back_chat.interceptor;
 
+import com.example.sk_pjt2_back_chat.service.RoomSubscriptionManager;
 import com.example.sk_pjt2_back_chat.service.UserSessionService;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class StompInterceptor implements ChannelInterceptor {
 
     private final UserSessionService userSessionService;
+    private final RoomSubscriptionManager roomSubscriptionManager;
 
-    public StompInterceptor(UserSessionService userSessionService) {
+    public StompInterceptor(UserSessionService userSessionService,
+                            RoomSubscriptionManager roomSubscriptionManager) {
         this.userSessionService = userSessionService;
+        this.roomSubscriptionManager = roomSubscriptionManager;
     }
 
     @Override
@@ -32,9 +38,24 @@ public class StompInterceptor implements ChannelInterceptor {
             }
         }
 
+//        if(accessor.getCommand() == StompCommand.SUBSCRIBE) {
+//            String sub = accessor.getSubscriptionId();
+//            System.out.println("클라이언트 구독: " + sub);
+//        }
         if(accessor.getCommand() == StompCommand.SUBSCRIBE) {
-            String sub = accessor.getSubscriptionId();
-            System.out.println("클라이언트 구독: " + sub);
+            String dest = accessor.getDestination();
+            String subscriptionId = accessor.getSubscriptionId();
+            if(dest != null && dest.startsWith("/sub/chat/room/") && sessionId != null) {
+                String roomUUID = dest.substring("/sub/chat/room/".length());
+                roomSubscriptionManager.addSubscription(sessionId, subscriptionId, roomUUID);
+            }
+        }
+
+        if(accessor.getCommand() == StompCommand.UNSUBSCRIBE) {
+            String subscriptionId = accessor.getSubscriptionId();
+            if(sessionId != null &&  subscriptionId != null) {
+                roomSubscriptionManager.removeSubscription(sessionId, subscriptionId);
+            }
         }
 
         if(accessor.getCommand() == StompCommand.DISCONNECT) {
@@ -50,6 +71,10 @@ public class StompInterceptor implements ChannelInterceptor {
                 userSessionService.disconnectBySessionId(sessionId);
             } else {
                 System.out.println("DISCONNECT: sender와 세션 ID 모두 없음");
+            }
+
+            if(sessionId != null) {
+                roomSubscriptionManager.removeSession(sessionId);
             }
         }
 
