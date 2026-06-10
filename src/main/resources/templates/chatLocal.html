@@ -24,6 +24,10 @@
             border-radius: 5px;
             border-left: 4px solid #2196f3;
         }
+        .loadtest-section {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+        }
         .input-group {
             margin: 10px 0;
         }
@@ -32,7 +36,7 @@
             width: 100px;
             font-weight: bold;
         }
-        input[type="text"], select {
+        input[type="text"], input[type="number"], select {
             padding: 5px;
             margin: 5px;
             border: 1px solid #ddd;
@@ -56,6 +60,12 @@
         button.disconnect:hover {
             background: #d32f2f;
         }
+        button.loadtest {
+            background: #ff9800;
+        }
+        button.loadtest:hover {
+            background: #f57c00;
+        }
         #monitor {
             border: 1px solid #ddd;
             padding: 15px;
@@ -77,6 +87,15 @@
         .disconnected {
             background: #ffcdd2;
             color: #c62828;
+        }
+        #recvStats {
+            font-family: monospace;
+            font-weight: bold;
+            padding: 8px;
+            background: #f1f8e9;
+            border-radius: 4px;
+            margin-top: 8px;
+            white-space: pre-wrap;
         }
     </style>
 </head>
@@ -125,6 +144,22 @@
         </div>
     </div>
 
+    <div class="server-section loadtest-section">
+        <h3>🔥 부하 테스트 (유실율 측정)</h3>
+        <div class="input-group">
+            <label>전송 개수:</label>
+            <input id="ltCount" type="number" value="500" min="1" style="width: 100px;">
+            <label style="width:70px;">간격(ms):</label>
+            <input id="ltInterval" type="number" value="10" min="0" style="width: 100px;">
+            <button class="loadtest" onclick="startLoadTest()">🔥 발사</button>
+        </div>
+        <div class="input-group">
+            <button class="loadtest" onclick="resetRecvCounter()">♻️ 수신 카운터 리셋</button>
+            <small style="color:#666;">보내는 쪽에서 [발사], 받는 쪽에서 결과 확인 → 받는 쪽에서 측정</small>
+        </div>
+        <div id="recvStats">수신 집계: 대기 중 (LT 메시지 수신 시 자동 표시)</div>
+    </div>
+
     <div class="server-section">
         <h3>🔍 디버그 & 모니터링</h3>
         <button onclick="checkAllSessions()">📊 전체 세션 현황</button>
@@ -145,6 +180,99 @@
 <script>
     let stompClient = null;
     let currentServer = null;
+
+    // ===== 부하 테스트용 수신 카운터 =====
+    // LT#<순번> 형식의 메시지만 집계한다 (일반 채팅과 구분)
+    let recvSet = new Set();      // 받은 순번 모음 (중복 제거)
+    let recvCount = 0;            // 받은 총 횟수 (중복 포함)
+    let firstRecvTime = null;     // 첫 LT 수신 시각
+    let lastRecvTime = null;      // 마지막 LT 수신 시각
+
+    function resetRecvCounter() {
+        recvSet = new Set();
+        recvCount = 0;
+        firstRecvTime = null;
+        lastRecvTime = null;
+        document.getElementById('recvStats').textContent = '수신 집계: 리셋됨. 대기 중...';
+        addToMonitor('♻️ 수신 카운터 리셋', 'warning');
+    }
+
+    function updateRecvStats(expected) {
+        const unique = recvSet.size;
+        const exp = expected || unique;     // 기대값(받는 쪽은 모르므로 최대 순번으로 추정)
+        const lost = exp - unique;
+        const lostPct = exp > 0 ? ((lost / exp) * 100).toFixed(2) : '0.00';
+        const dupes = recvCount - unique;
+
+        // 누락된 번호 찾기 (1 ~ 최대순번 중 빠진 것)
+        let maxSeq = 0;
+        recvSet.forEach(n => { if (n > maxSeq) maxSeq = n; });
+        const missing = [];
+        for (let i = 1; i <= maxSeq; i++) {
+            if (!recvSet.has(i)) missing.push(i);
+        }
+
+        let elapsed = (firstRecvTime && lastRecvTime)
+            ? ((lastRecvTime - firstRecvTime) / 1000).toFixed(2) : '0';
+        let throughput = (elapsed > 0) ? (unique / elapsed).toFixed(1) : '-';
+
+        const text =
+            `수신 집계
+  최대 순번      : ${maxSeq}
+  고유 수신      : ${unique}
+  중복 수신      : ${dupes}
+  누락 개수      : ${missing.length}  (유실율 ${maxSeq > 0 ? ((missing.length/maxSeq)*100).toFixed(2) : '0.00'}%)
+  소요 시간      : ${elapsed}s   (${throughput} msg/s)
+  누락 번호      : ${missing.length === 0 ? '없음 ✅' : (missing.slice(0,50).join(', ') + (missing.length > 50 ? ' ...' : ''))}`;
+        document.getElementById('recvStats').textContent = text;
+    }
+
+    // ===== 부하 테스트 발사 =====
+    function startLoadTest() {
+        if (!stompClient || !currentServer) {
+            addToMonitor('❌ 서버에 연결되지 않았습니다.', 'error');
+            return;
+        }
+        const roomUUID = document.getElementById('roomId').value;
+        const sender = document.getElementById('sender').value;
+        const count = parseInt(document.getElementById('ltCount').value, 10);
+        const interval = parseInt(document.getElementById('ltInterval').value, 10);
+
+        if (!roomUUID || !sender) {
+            addToMonitor('❌ 방 UUID와 사용자명이 필요합니다.', 'error');
+            return;
+        }
+
+        addToMonitor(`🔥 부하 테스트 시작: ${count}건, 간격 ${interval}ms`, 'warning');
+        let i = 1;
+        const startTime = Date.now();
+
+        function fireOne() {
+            if (i > count) {
+                const took = ((Date.now() - startTime) / 1000).toFixed(2);
+                addToMonitor(`✅ 발사 완료: ${count}건 전송, ${took}s 소요`, 'success');
+                return;
+            }
+            const message = {
+                'roomUUID': roomUUID,
+                'sender': sender,
+                'content': `LT#${i}`     // 부하 테스트 표식 + 순번
+            };
+            try {
+                stompClient.send(`/pub/room/${roomUUID}/message`, {}, JSON.stringify(message));
+            } catch (e) {
+                addToMonitor(`❌ ${i}번 전송 실패: ${e.message}`, 'error');
+            }
+            i++;
+            if (interval > 0) {
+                setTimeout(fireOne, interval);
+            } else {
+                // 간격 0이면 최대한 빠르게 (블로킹 방지 위해 즉시 다음)
+                fireOne();
+            }
+        }
+        fireOne();
+    }
 
     // 서버 선택 변경 시
     document.getElementById('serverSelect').addEventListener('change', function() {
@@ -286,6 +414,25 @@
     function chatting(response) {
         if (response.body) {
             const res = JSON.parse(response.body);
+
+            // 부하 테스트 메시지(LT#순번)인지 확인
+            const m = typeof res.content === 'string' ? res.content.match(/^LT#(\d+)$/) : null;
+            if (m) {
+                const seq = parseInt(m[1], 10);
+                recvCount++;
+                recvSet.add(seq);
+                const now = Date.now();
+                if (!firstRecvTime) firstRecvTime = now;
+                lastRecvTime = now;
+                // 매번 로그 찍으면 화면 폭발하므로, 집계 박스만 갱신 (50개마다 로그 1줄)
+                if (recvCount % 50 === 0 || recvCount === 1) {
+                    addToMonitor(`🔥 LT 수신 진행: 고유 ${recvSet.size}건`, 'warning');
+                }
+                updateRecvStats();
+                return;  // 부하 메시지는 일반 로그에 안 찍음
+            }
+
+            // 일반 채팅 메시지
             addToMonitor(`💬 ${res.sender}: ${res.content}`, 'message');
         }
     }
@@ -447,6 +594,7 @@
     window.addEventListener('load', function() {
         addToMonitor('🎉 멀티서버 채팅 테스트 페이지 로드됨', 'success');
         addToMonitor('💡 서버를 선택하고 방 UUID, 사용자명을 입력한 후 연결하세요.', 'info');
+        addToMonitor('🔥 부하 테스트: 양쪽 연결 후, 한쪽에서 [발사] → 받는 쪽 집계 박스 확인', 'warning');
     });
 </script>
 </body>
